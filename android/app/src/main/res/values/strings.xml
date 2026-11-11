@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">Vakitler</string>
     <!-- Netlify sitenizin adresi. Boş bırakılırsa uygulama ilk açılışta sorar. Örnek: https://vakitlerim.netlify.app/ -->
-    <string name="site_url" translatable="false"></string>
+    <string name="site_url" translatable="false">https://merami-namazvakti.netlify.app/</string>
     <string name="wg_tablo">Vakitler · Tablo</string>
     <string name="wg_kompakt">Vakitler · Kompakt</string>
     <string name="wg_serit">Vakitler · Şerit</string>
