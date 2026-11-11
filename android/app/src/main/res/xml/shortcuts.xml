@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="widget_ekle"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/sc_widget"
+        android:shortcutLongLabel="@string/sc_widget_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.vakitler.app"
+            android:targetClass="com.vakitler.app.PinActivity" />
+    </shortcut>
+</shortcuts>

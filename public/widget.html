@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Vakit Widget</title>
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Vakit Widget">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="/css/widgets.css">
+  <style>
+    html, body { margin: 0; height: 100%; background: #0b1118; font-family: system-ui, -apple-system, sans-serif; }
+    body.light { background: #ece8de; }
+    body.amoled { background: #000; }
+    .stage { min-height: 100dvh; display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top)) 14px max(16px, env(safe-area-inset-bottom)); box-sizing: border-box; gap: 14px; align-content: center; }
+    .stage .wg-wrap.size-2x2, .stage .wg-wrap.size-2x4 { width: min(78vw, 360px); max-width: none; }
+    .stage { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+    .stage .wg-wrap.size-4x2, .stage .wg-wrap.size-4x1 { width: 100%; max-width: 720px; }
+    .bar { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+    .bar a, .bar button { font: 600 12px system-ui; color: #cfd8e3; background: rgba(255,255,255,.08); border: 0; border-radius: 9px; padding: 7px 10px; text-decoration: none; cursor: pointer; }
+    body.light .bar a, body.light .bar button { color: #333; background: rgba(0,0,0,.06); }
+    .bar .on { background: #b8893a; color: #fff; }
+    .stat { font: 12px system-ui; color: #8794a3; text-align: center; }
+    .bar .pin { flex-basis: 100%; background: #18794a !important; color: #fff !important; font-size: 14px !important; padding: 10px !important; border-radius: 12px !important; }
+    .help { font: 14px/1.5 system-ui; color: #dfe6ee; background: rgba(255,255,255,.08); border-radius: 12px; padding: 12px 14px; max-width: 520px; }
+    body.light .help { color: #222; background: rgba(0,0,0,.06); }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div id="w" class="wg-wrap"></div>
+    <div class="stat" id="stat"></div>
+    <div class="bar" id="bar"></div>
+    <div class="help" id="help" hidden></div>
+  </div>
+  <script src="/js/core.js"></script>
+  <script src="/js/widgets.js"></script>
+  <script>
+    (function () {
+      const { STYLES } = NVW;
+      const q = new URLSearchParams(location.search);
+      let style = q.get('s');
+      let syncing = false;
+
+      function draw() {
+        const st = NV.load();
+        style = STYLES[style] ? style : st.settings.widgetStyle;
+        const S = STYLES[style] || STYLES.tablo;
+        const loc = NV.activeLoc(st);
+        const w = document.getElementById('w');
+        w.className = 'wg-wrap size-' + S.size.replace('×', 'x');
+        document.body.className = style === 'gece' ? 'amoled' : (style === 'cam' || matchMedia('(prefers-color-scheme: dark)').matches ? '' : 'light');
+        if (!loc) {
+          w.innerHTML = '<div class="wg"><div class="wg-empty">Konum yok.<br><small>Uygulamayı açıp il ekleyin.</small></div></div>';
+        } else {
+          const now = new Date();
+          w.innerHTML = S.render(NV.model(loc, now), st.settings.widgetTop, now);
+        }
+        const up = loc?.updatedAt?.f || loc?.updatedAt?.d;
+        document.getElementById('stat').textContent = (navigator.onLine ? '' : 'Çevrimdışı · ') +
+          (up ? 'Güncelleme: ' + new Date(up).toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' }) : '');
+        const NATIVE = ['tablo', 'kompakt', 'serit', 'liste'];
+        const barEl = document.getElementById('bar');
+        if (barEl.dataset.s === style) return; // menü yalnızca bir kez çizilir (dokunuşlar kaybolmasın)
+        barEl.dataset.s = style;
+        barEl.innerHTML = (NATIVE.includes(style) ? `<button id="pinBtn" class="pin">📌 Ana ekrana ekle</button>` : '') +
+          Object.entries(STYLES).map(([k, v]) => `<a href="?s=${k}" class="${k === style ? 'on' : ''}">${v.name}</a>`).join('') + '<a href="/">Uygulama</a>';
+        const pb = document.getElementById('pinBtn');
+        if (pb) pb.onclick = () => {
+          if (window.AndroidBridge) { try { window.AndroidBridge.pinWidget(style); } catch (e) {} document.getElementById('help').innerHTML = 'Telefon “Ekle” diye sorarsa onaylayın. Sormazsa: ana ekranda boş bir yere basılı tutun → <b>Widget\'lar</b> → <b>Vakitler</b>.'; }
+          else document.getElementById('help').innerHTML = 'Telefonun ana ekranına widget koymak için <b>Vakitler Android uygulaması (APK)</b> gerekiyor; tarayıcıdan kurulan sürüm widget ekleyemez (Android kuralı).<br><br>1) GitHub deponuzda <b>Releases</b> → <b>Vakitler.apk</b>\'yı indirip kurun.<br>2) Vakitler uygulamasında <b>Menü → Widget</b> → <b>📌 Ana ekrana ekle</b>.<br>Ya da ana ekranda boş yere basılı tutun → <b>Widget\'lar</b> → <b>Vakitler</b>.';
+          document.getElementById('help').hidden = false;
+        };
+      }
+
+      async function sync() {
+        if (syncing || !navigator.onLine) return;
+        const loc = NV.activeLoc(); if (!loc) return;
+        syncing = true;
+        try { await NV.syncLoc(loc); } catch (e) {} finally { syncing = false; draw(); }
+      }
+
+      draw();
+      setInterval(draw, 1000);
+      setInterval(sync, 30 * 60000);
+      sync();
+      addEventListener('online', sync);
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) { draw(); sync(); } });
+      if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+    })();
+  </script>
+</body>
+</html>

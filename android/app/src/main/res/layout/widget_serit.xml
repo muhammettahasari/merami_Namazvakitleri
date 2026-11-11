@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/root" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="horizontal" android:background="@drawable/wg_bg" android:padding="6dp">
+<LinearLayout android:id="@+id/col0" android:layout_width="0dp" android:layout_height="match_parent" android:orientation="vertical" android:layout_weight="1" android:gravity="center" android:background="@drawable/cell_off" android:layout_marginStart="2dp" android:layout_marginEnd="2dp">
+<TextView android:id="@+id/s0_l" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="10sp" android:textColor="#7A8592" android:maxLines="1" android:textStyle="bold" android:gravity="center" />
+<TextView android:id="@+id/s0_a" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="14sp" android:textColor="#17212B" android:maxLines="1" android:textStyle="bold" android:gravity="center" />
+<TextView android:id="@+id/s0_b" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="14sp" android:textColor="#17212B" android:maxLines="1" android:textStyle="bold" android:gravity="center" />
+</LinearLayout>
+<LinearLayout android:id="@+id/col1" android:layout_width="0dp" android:layout_height="match_parent" android:orientation="vertical" android:layout_weight="1" android:gravity="center" android:background="@drawable/cell_off" android:layout_marginStart="2dp" android:layout_marginEnd="2dp">
+<TextView android:id="@+id/s1_l" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="10sp" android:textColor="#7A8592" android:maxLines="1" android:textStyle="bold" android:gravity="center" />
+<TextView android:id="@+id/s1_a" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="14sp" android:textColor="#17212B" android:maxLines="1" android:textStyle="bold" android:gravity="center" />
+<TextView android:id="@+id/s1_b" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="14sp" android:textColor="#17212B" android:maxLines="1" android:textStyle="bold" android:gravity="center" />
+</LinearLayout>
+<LinearLayout android:id="@+id/col2" android:layout_width="0dp" android:layout_height="match_parent" android:orientation="vertical" android:layout_weight="1" android:gravity="center" android:background="@drawable/cell_off" android:layout_marginStart="2dp" android:layout_marginEnd="2dp">
+<TextView android:id="@+id/s2_l" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="10sp" android:textColor="#7A8592" android:maxLines="1" android:textStyle="bold" android:gravity="center" />
+<TextView android:id="@+id/s2_a" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="14sp" android:textColor="#17212B" android:maxLines="1" android:textStyle="bold" android:gravity="center" />
+<TextView android:id="@+id/s2_b" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="14sp" android:textColor="#17212B" android:maxLines="1" android:textStyle="bold" android:gravity="center" />
+</LinearLayout>
+<LinearLayout android:id="@+id/col3" android:layout_width="0dp" android:layout_height="match_parent" android:orientation="vertical" android:layout_weight="1" android:gravity="center" android:background="@drawable/cell_off" android:layout_marginStart="2dp" android:layout_marginEnd="2dp">
+<TextView android:id="@+id/s3_l" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="10sp" android:textColor="#7A8592" android:maxLines="1" android:textStyle="bold" android:gravity="center" />
+<TextView android:id="@+id/s3_a" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="14sp" android:textColor="#17212B" android:maxLines="1" android:textStyle="bold" android:gravity="center" />
+<TextView android:id="@+id/s3_b" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="14sp" android:textColor="#17212B" android:maxLines="1" android:textStyle="bold" android:gravity="center" />
+</LinearLayout>
+<LinearLayout android:id="@+id/col4" android:layout_width="0dp" android:layout_height="match_parent" android:orientation="vertical" android:layout_weight="1" android:gravity="center" android:background="@drawable/cell_off" android:layout_marginStart="2dp" android:layout_marginEnd="2dp">
+<TextView android:id="@+id/s4_l" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="10sp" android:textColor="#7A8592" android:maxLines="1" android:textStyle="bold" android:gravity="center" />
+<TextView android:id="@+id/s4_a" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="14sp" android:textColor="#17212B" android:maxLines="1" android:textStyle="bold" android:gravity="center" />
+<TextView android:id="@+id/s4_b" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="14sp" android:textColor="#17212B" android:maxLines="1" android:textStyle="bold" android:gravity="center" />
+</LinearLayout>
+<LinearLayout android:id="@+id/col5" android:layout_width="0dp" android:layout_height="match_parent" android:orientation="vertical" android:layout_weight="1" android:gravity="center" android:background="@drawable/cell_off" android:layout_marginStart="2dp" android:layout_marginEnd="2dp">
+<TextView android:id="@+id/s5_l" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="10sp" android:textColor="#7A8592" android:maxLines="1" android:textStyle="bold" android:gravity="center" />
+<TextView android:id="@+id/s5_a" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="14sp" android:textColor="#17212B" android:maxLines="1" android:textStyle="bold" android:gravity="center" />
+<TextView android:id="@+id/s5_b" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="14sp" android:textColor="#17212B" android:maxLines="1" android:textStyle="bold" android:gravity="center" />
+</LinearLayout>
+</LinearLayout>

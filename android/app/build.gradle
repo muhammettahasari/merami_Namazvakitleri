@@ -1,0 +1,44 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.vakitler.app'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.vakitler.app'
+        minSdk 26
+        targetSdk 34
+        // GitHub her derlemede sürüm numarasını artırır (güncelleme olarak kurulur)
+        versionCode Integer.parseInt(System.getenv('GITHUB_RUN_NUMBER') ?: '1')
+        versionName "1.0." + (System.getenv('GITHUB_RUN_NUMBER') ?: '0')
+    }
+
+    // Sabit imza: her yeni sürüm eskisinin üzerine güncelleme olarak kurulur (veriler silinmez)
+    signingConfigs {
+        release {
+            storeFile file('vakitler.jks')
+            storePassword 'vakitler2026'
+            keyAlias 'vakitler'
+            keyPassword 'vakitler2026'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+}

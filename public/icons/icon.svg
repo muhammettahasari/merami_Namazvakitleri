@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#173f2c"/><stop offset="1" stop-color="#0b2118"/>
+    </linearGradient>
+    <radialGradient id="petal" cx="0.45" cy="0.35" r="0.75">
+      <stop offset="0" stop-color="#f0607a"/><stop offset="0.6" stop-color="#c8183c"/><stop offset="1" stop-color="#8e0c27"/>
+    </radialGradient>
+    <radialGradient id="inner" cx="0.5" cy="0.4" r="0.7">
+      <stop offset="0" stop-color="#ff8aa0"/><stop offset="1" stop-color="#b3122f"/>
+    </radialGradient>
+    <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5fcf87"/><stop offset="1" stop-color="#1f7a46"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- ince altın çerçeve -->
+  <rect x="26" y="26" width="460" height="460" rx="92" fill="none" stroke="#c9a24a" stroke-opacity=".55" stroke-width="5"/>
+  <!-- sap -->
+  <path d="M256 300 C 250 350, 262 400, 252 460" fill="none" stroke="#2f9a5c" stroke-width="14" stroke-linecap="round"/>
+  <!-- yapraklar -->
+  <path d="M254 372 C 200 340, 150 352, 128 392 C 178 410, 226 404, 254 372 Z" fill="url(#leaf)"/>
+  <path d="M254 372 C 210 372, 168 380, 140 390" fill="none" stroke="#174d2e" stroke-width="3" opacity=".6"/>
+  <path d="M258 410 C 306 376, 356 384, 382 420 C 334 442, 286 440, 258 410 Z" fill="url(#leaf)"/>
+  <path d="M258 410 C 300 406, 340 412, 370 420" fill="none" stroke="#174d2e" stroke-width="3" opacity=".6"/>
+  <!-- çanak yaprakları -->
+  <path d="M256 300 L 214 316 L 236 286 Z M256 300 L 300 318 L 276 286 Z" fill="#2f9a5c"/>
+  <!-- gül -->
+  <ellipse cx="256" cy="222" rx="88" ry="72" fill="#86102a"/>
+  <!-- arka taç yapraklar (dalgalı üst kenar) -->
+  <path d="M162 214 C 150 168, 178 132, 212 140 C 222 112, 290 110, 300 140 C 336 130, 364 168, 350 214 C 330 196, 300 196, 256 200 C 212 196, 182 196, 162 214 Z" fill="#9b0f2c"/>
+  <!-- iç gonca -->
+  <path d="M212 196 C 206 160, 236 142, 258 146 C 286 150, 304 172, 298 200 C 286 214, 228 216, 212 196 Z" fill="url(#inner)"/>
+  <path d="M236 186 C 236 166, 258 158, 272 168 C 284 178, 280 196, 266 198 C 276 188, 270 174, 258 176 C 248 178, 246 190, 236 186 Z" fill="#a50f2d"/>
+  <!-- sol ve sağ sarmal yapraklar -->
+  <path d="M256 304 C 192 302, 154 262, 158 212 C 162 182, 186 172, 206 182 C 196 220, 214 264, 256 278 Z" fill="url(#petal)"/>
+  <path d="M256 304 C 320 302, 358 262, 354 212 C 350 182, 326 172, 306 182 C 316 220, 298 264, 256 278 Z" fill="url(#petal)"/>
+  <!-- ön kase yaprağı -->
+  <path d="M184 214 C 204 232, 232 238, 256 236 C 280 238, 308 232, 328 214 C 332 262, 300 300, 256 302 C 212 300, 180 262, 184 214 Z" fill="url(#petal)"/>
+  <path d="M184 214 C 204 232, 232 238, 256 236 C 280 238, 308 232, 328 214 C 306 226, 282 230, 256 229 C 230 230, 206 226, 184 214 Z" fill="#ff8aa0" opacity=".55"/>
+  <path d="M200 262 C 222 286, 290 286, 312 262" fill="none" stroke="#7d0a22" stroke-width="4" opacity=".35" stroke-linecap="round"/>
+  <!-- küçük hilal -->
+  <path d="M402 88 a 34 34 0 1 0 24 58 a 27 27 0 1 1 -24 -58 Z" fill="#e8c36a"/>
+</svg>

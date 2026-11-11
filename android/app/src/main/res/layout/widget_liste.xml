@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/root" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:background="@drawable/wg_bg" android:padding="12dp">
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="4dp">
+<TextView android:id="@+id/l_loc" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1.1" android:textSize="12sp" android:textColor="#17212B" android:maxLines="1" android:textStyle="bold" />
+<TextView android:id="@+id/l_ha" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textSize="11sp" android:textColor="#FFFFFF" android:maxLines="1" android:textStyle="bold" android:gravity="center" android:background="@drawable/badge_fz" android:layout_marginStart="8dp" android:layout_marginEnd="8dp" />
+<TextView android:id="@+id/l_hb" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textSize="11sp" android:textColor="#FFFFFF" android:maxLines="1" android:textStyle="bold" android:gravity="center" android:background="@drawable/badge_dy" android:layout_marginStart="8dp" android:layout_marginEnd="8dp" />
+</LinearLayout>
+<LinearLayout android:id="@+id/lr0" android:layout_width="match_parent" android:layout_height="0dp" android:orientation="horizontal" android:layout_weight="1" android:gravity="center_vertical" android:background="@drawable/cell_off" android:paddingStart="6dp">
+<TextView android:id="@+id/l0_n" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1.1" android:textSize="13sp" android:textColor="#17212B" android:maxLines="1" android:textStyle="bold" />
+<TextView android:id="@+id/l0_a" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textSize="15sp" android:textColor="#17212B" android:maxLines="1" android:textStyle="bold" android:gravity="center" />
+<TextView android:id="@+id/l0_b" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textSize="15sp" android:textColor="#17212B" android:maxLines="1" android:textStyle="bold" android:gravity="center" />
+</LinearLayout>
+<LinearLayout android:id="@+id/lr1" android:layout_width="match_parent" android:layout_height="0dp" android:orientation="horizontal" android:layout_weight="1" android:gravity="center_vertical" android:background="@drawable/cell_off" android:paddingStart="6dp">
+<TextView android:id="@+id/l1_n" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1.1" android:textSize="13sp" android:textColor="#17212B" android:maxLines="1" android:textStyle="bold" />
+<TextView android:id="@+id/l1_a" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textSize="15sp" android:textColor="#17212B" android:maxLines="1" android:textStyle="bold" android:gravity="center" />
+<TextView android:id="@+id/l1_b" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textSize="15sp" android:textColor="#17212B" android:maxLines="1" android:textStyle="bold" android:gravity="center" />
+</LinearLayout>
+<LinearLayout android:id="@+id/lr2" android:layout_width="match_parent" android:layout_height="0dp" android:orientation="horizontal" android:layout_weight="1" android:gravity="center_vertical" android:background="@drawable/cell_off" android:paddingStart="6dp">
+<TextView android:id="@+id/l2_n" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1.1" android:textSize="13sp" android:textColor="#17212B" android:maxLines="1" android:textStyle="bold" />
+<TextView android:id="@+id/l2_a" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textSize="15sp" android:textColor="#17212B" android:maxLines="1" android:textStyle="bold" android:gravity="center" />
+<TextView android:id="@+id/l2_b" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textSize="15sp" android:textColor="#17212B" android:maxLines="1" android:textStyle="bold" android:gravity="center" />
+</LinearLayout>
+<LinearLayout android:id="@+id/lr3" android:layout_width="match_parent" android:layout_height="0dp" android:orientation="horizontal" android:layout_weight="1" android:gravity="center_vertical" android:background="@drawable/cell_off" android:paddingStart="6dp">
+<TextView android:id="@+id/l3_n" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1.1" android:textSize="13sp" android:textColor="#17212B" android:maxLines="1" android:textStyle="bold" />
+<TextView android:id="@+id/l3_a" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textSize="15sp" android:textColor="#17212B" android:maxLines="1" android:textStyle="bold" android:gravity="center" />
+<TextView android:id="@+id/l3_b" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textSize="15sp" android:textColor="#17212B" android:maxLines="1" android:textStyle="bold" android:gravity="center" />
+</LinearLayout>
+<LinearLayout android:id="@+id/lr4" android:layout_width="match_parent" android:layout_height="0dp" android:orientation="horizontal" android:layout_weight="1" android:gravity="center_vertical" android:background="@drawable/cell_off" android:paddingStart="6dp">
+<TextView android:id="@+id/l4_n" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1.1" android:textSize="13sp" android:textColor="#17212B" android:maxLines="1" android:textStyle="bold" />
+<TextView android:id="@+id/l4_a" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textSize="15sp" android:textColor="#17212B" android:maxLines="1" android:textStyle="bold" android:gravity="center" />
+<TextView android:id="@+id/l4_b" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textSize="15sp" android:textColor="#17212B" android:maxLines="1" android:textStyle="bold" android:gravity="center" />
+</LinearLayout>
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="4dp">
+<TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textSize="11sp" android:textColor="#7A8592" android:maxLines="1" android:text="F İmsak · Güneş" />
+<TextView android:id="@+id/l_x1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="12sp" android:textColor="#18794A" android:maxLines="1" android:textStyle="bold" />
+</LinearLayout>
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="2dp">
+<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="11sp" android:textColor="#7A8592" android:maxLines="1" android:text="Teheccüd" />
+<TextView android:id="@+id/l_x2" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textSize="11.5sp" android:textColor="#17212B" android:textStyle="bold" android:gravity="end" android:maxLines="2" />
+</LinearLayout>
+</LinearLayout>

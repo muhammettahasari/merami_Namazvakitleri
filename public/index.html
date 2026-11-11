@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Namaz Vakitleri</title>
+  <meta name="description" content="Diyanet ve Fazilet namaz vakitleri yan yana, internetsiz çalışır.">
+  <meta name="theme-color" content="#0f2a3d">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Vakitler">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="/css/app.css">
+  <link rel="stylesheet" href="/css/widgets.css">
+</head>
+<body>
+  <div id="app">
+    <header class="top">
+      <button id="locBtn" class="loc" aria-label="Konum değiştir">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z"/></svg>
+        <span id="locName">Konum seçin</span>
+        <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg>
+      </button>
+      <button id="themeBtn" class="icon" aria-label="Gece / gündüz modu" data-tip="Gece / gündüz modu">
+        <svg class="i-sun" viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm0-5 1 3h-2l1-3Zm0 20-1-3h2l-1 3ZM2 12l3-1v2l-3-1Zm20 0-3 1v-2l3 1ZM4.9 4.9l2.8 1.4-1.4 1.4-1.4-2.8Zm14.2 14.2-2.8-1.4 1.4-1.4 1.4 2.8Zm0-14.2-1.4 2.8-1.4-1.4 2.8-1.4ZM4.9 19.1l1.4-2.8 1.4 1.4-2.8 1.4Z"/></svg>
+        <svg class="i-moon" viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M21 14.5A9 9 0 0 1 9.5 3a8 8 0 1 0 11.5 11.5Z"/></svg>
+      </button>
+      <button id="wgBtn" class="icon" aria-label="Widget stilleri" data-tip="Widget stilleri">
+        <svg viewBox="0 0 24 24" width="19" height="19"><path fill="currentColor" d="M3 3h8v8H3V3Zm10 0h8v8h-8V3ZM3 13h8v8H3v-8Zm10 0h8v8h-8v-8Z"/></svg>
+      </button>
+      <button id="syncBtn" class="icon" aria-label="Güncelle" data-tip="Vakitleri güncelle">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35Z"/></svg>
+      </button>
+    </header>
+    <div id="netStatus" class="net" hidden></div>
+    <div id="installBar" class="install" hidden></div>
+
+    <main>
+      <!-- VAKİTLER -->
+      <section id="v-home" class="view active">
+        <div class="date"><b id="dMiladi"></b><span id="dHicri"></span><span id="dayPhase" class="phase"></span></div>
+        <div class="srcbar" role="note">
+          <span class="srcchip dy" data-tip="MAVİ = Diyanet İşleri Başkanlığı vakitleri (namazvakitleri.diyanet.gov.tr). Diyanet'te sabah namazı vakti “İmsak” olarak verilir."><i></i>Diyanet</span>
+          <span class="srcchip fz" data-tip="YEŞİL = Fazilet Takvimi vakitleri (fazilettakvimi.com). Sabah bölümü İmsak, Sabah ve Güneş olarak üçe ayrılır."><i></i>Fazilet</span>
+          <span class="srcchip est" data-tip="≈ işaretli saatler tahminidir: Fazilet o gün için henüz indirilmedi. İnternete bağlanınca gerçek değer gelir.">≈ tahmini</span>
+          <span class="srcinfo" data-tip="Renklere dokunun veya üzerine gelin: açıklama görünür.">ⓘ</span>
+        </div>
+        <div id="hero" class="hero"></div>
+        <h2 class="sec">Karşılaştırma</h2>
+        <div id="cmp"></div>
+        <h2 class="sec">Vakitler <small>üstte <span id="topLbl"></span></small></h2>
+        <div id="list" class="cards"></div>
+        <p class="legend"><span class="dot dy"></span>Mavi: Diyanet <span class="dot fz"></span>Yeşil: Fazilet <span class="est-ex">≈ tahmini</span></p>
+      </section>
+
+      <!-- İMSAKİYE -->
+      <section id="v-cal" class="view">
+        <h2 class="sec">Kayıtlı günler <small id="calInfo"></small></h2>
+        <div class="srcbar sticky" role="note">
+          <span class="srcchip dy" data-tip="D satırı (mavi) = Diyanet. Sabah sütununda Diyanet'in İmsak vakti yazar."><i></i>D · Diyanet</span>
+          <span class="srcchip fz" data-tip="F satırı (yeşil) = Fazilet. Sabah sütununda Fazilet'in Sabah vakti yazar."><i></i>F · Fazilet</span>
+          <span class="srcchip est" data-tip="≈ = tahmini Fazilet saati (henüz indirilmemiş gün).">≈ tahmini</span>
+        </div>
+        <div id="cal" class="cal"></div>
+      </section>
+
+      <!-- KIBLE -->
+      <section id="v-qibla" class="view"></section>
+
+      <!-- ZİKİRMATİK -->
+      <section id="v-zikir" class="view"></section>
+
+      <!-- WIDGET -->
+      <section id="v-wg" class="view">
+        <h2 class="sec">Widget stilleri</h2>
+        <div class="seg" id="wgTopSeg" role="radiogroup" aria-label="Widget'ta üstte">
+          <button data-v="fazilet" class="fz">Fazilet üstte</button>
+          <button data-v="diyanet" class="dy">Diyanet üstte</button>
+        </div>
+        <div id="gallery" class="gallery"></div>
+        <details class="howto">
+          <summary>Ana ekrana widget olarak nasıl eklenir?</summary>
+          <p><b>Android (Chrome):</b> Bir stilin altındaki <i>Aç</i> düğmesine basın, açılan sayfada menü ⋮ → <i>Ana ekrana ekle</i>. Ayrıca uygulama simgesine uzun basınca “Widget” kısayolu çıkar.</p>
+          <p><b>iPhone (Safari):</b> <i>Aç</i> → Paylaş → <i>Ana Ekrana Ekle</i>. Açınca seçtiğiniz widget tam ekran gelir.</p>
+          <p class="muted">Web uygulamaları (PWA) Android ve iOS'ta gerçek ana ekran widget'ı oluşturamaz; bu, işletim sistemlerinin bir kısıtıdır. Buradaki stiller, tek dokunuşla açılan “widget ekranı” olarak çalışır. Gerçek ana ekran widget'ı için bu proje Capacitor ile yerel uygulamaya sarılabilir.</p>
+        </details>
+      </section>
+
+      <!-- AYARLAR -->
+      <section id="v-set" class="view">
+        <h2 class="sec">Konumlar</h2>
+        <div id="locList" class="loclist"></div>
+        <button id="addLoc" class="btn primary">+ İl / ilçe ekle</button>
+        <p class="muted small">Yeni konum eklemek için internet gerekir. Eklenen konumların vakitleri telefona kaydedilir ve internetsiz çalışır.</p>
+
+        <h2 class="sec">Görünüm</h2>
+        <div class="field"><span>Ana ekranda üstte</span>
+          <div class="seg" id="appTopSeg"><button data-v="diyanet" class="dy">Diyanet</button><button data-v="fazilet" class="fz">Fazilet</button></div></div>
+        <div class="field"><span>Tema<small>Üstteki ☀️/🌙 düğmesiyle de değiştirilebilir</small></span>
+          <div class="seg" id="themeSeg"><button data-v="auto">Otomatik</button><button data-v="light">Gündüz</button><button data-v="dark">Gece</button></div></div>
+        <button class="btn wide" id="setWg">Widget stilleri →</button>
+        <button class="btn wide" id="setInstall">📲 Uygulamayı telefona yükle</button>
+        <label class="field sw"><span>Fazilet verisi olmayan günlerde tahmini göster <small>(≈ işaretli; en yakın gerçek günün Diyanet farkına göre)</small></span>
+          <input type="checkbox" id="estChk"><i></i></label>
+        <label class="field sw" id="lockRow" hidden><span>🔒 Kilit ekranında vakitleri göster <small>Sıradaki vakit, geri sayım ve günün vakitleri kilit ekranında bildirim olarak durur</small></span>
+          <input type="checkbox" id="lockChk"><i></i></label>
+
+        <h2 class="sec">Veri</h2>
+        <div id="dataInfo" class="muted small"></div>
+        <button id="forceSync" class="btn">Şimdi tümünü güncelle</button>
+        <p class="muted small" id="verInfo"></p>
+        <p class="muted small">Kaynaklar: namazvakitleri.diyanet.gov.tr (yıllık tablo, ~1 yıl) ve namaz-vakitleri.fazilettakvimi.com (site tek seferde dün/bugün/yarın verir; uygulama her açılışta biriktirir).</p>
+      </section>
+    </main>
+
+    <div id="menuShade" class="menu-shade" hidden></div>
+    <nav class="fabnav" id="fabnav">
+      <div class="tabs" id="menuList" role="menu" aria-label="Bölümler">
+        <button data-v="home" class="on"><svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm1 2v6.4l4.3 2.6-1 1.7L11 13.4V6h2Z"/></svg>Vakitler</button>
+        <button data-v="cal"><svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 16H5V9h14v11Z"/></svg>İmsakiye</button>
+        <button data-v="qibla"><svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm4.5 3.5-2.8 6.2-6.2 2.8 2.8-6.2 6.2-2.8ZM12 10.6a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8Z"/></svg>Kıble</button>
+        <button data-v="zikir"><svg viewBox="0 0 24 24"><circle cx="12" cy="4.5" r="2"/><circle cx="17.3" cy="6.7" r="2"/><circle cx="19.5" cy="12" r="2"/><circle cx="17.3" cy="17.3" r="2"/><circle cx="6.7" cy="6.7" r="2"/><circle cx="4.5" cy="12" r="2"/><circle cx="6.7" cy="17.3" r="2"/><path d="M12 17v5h-1.5v-5z"/><circle cx="12" cy="17" r="2.2"/></svg>Zikir</button>
+        <button data-v="wg"><svg viewBox="0 0 24 24"><path d="M3 3h8v8H3V3Zm10 0h8v8h-8V3ZM3 13h8v8H3v-8Zm10 0h8v8h-8v-8Z"/></svg>Widget</button>
+        <button data-v="set"><svg viewBox="0 0 24 24"><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.7 7.7 0 0 0-1.7-1L15 3h-4l-.4 2.9a7.7 7.7 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1c.5.4 1.1.7 1.7 1L11 21h4l.4-2.9c.6-.3 1.2-.6 1.7-1l2.5 1 2-3.5-2.2-1.6ZM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z"/></svg>Ayarlar</button>
+      </div>
+      <button id="menuBtn" class="fab" aria-expanded="false" aria-controls="menuList">
+        <span class="fab-ic" id="menuIc"></span>
+        <span class="fab-tx"><small>Menü</small><b id="menuCur">Vakitler</b></span>
+        <svg class="fab-ch" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M7 14l5-5 5 5z"/></svg>
+      </button>
+    </nav>
+  </div>
+
+  <!-- Konum ekleme -->
+  <dialog id="addDlg">
+    <form method="dialog" class="dlg">
+      <h3>İl / ilçe ekle</h3>
+      <label>İl<select id="selIl" required><option value="">Yükleniyor…</option></select></label>
+      <label>İlçe (Diyanet)<select id="selIlce" required disabled><option value="">Önce il seçin</option></select></label>
+      <label>Fazilet konumu<select id="selFz" disabled><option value="">Önce il seçin</option></select>
+        <small class="muted">Otomatik eşleştirilir, gerekirse değiştirin.</small></label>
+      <p id="addMsg" class="msg"></p>
+      <div class="row">
+        <button value="cancel" class="btn" formnovalidate>Vazgeç</button>
+        <button id="addSave" value="ok" class="btn primary" disabled>Kaydet ve indir</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="zDlg"></dialog>
+  <dialog id="instDlg"></dialog>
+  <div id="toast" class="toast" role="status"></div>
+  <div id="tip" class="tip" role="tooltip" hidden></div>
+
+  <script src="/js/core.js"></script>
+  <script src="/js/widgets.js"></script>
+  <script src="/js/fx.js"></script>
+  <script src="/js/wmm.js"></script>
+  <script src="/js/qibla.js"></script>
+  <script src="/js/vird.js"></script>
+  <script src="/js/zikir.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
