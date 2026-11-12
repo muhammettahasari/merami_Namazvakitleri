@@ -1,8 +1,8 @@
-// Fazilet Takvimi: il/ilçe listesi ve vakitler
+// Verâ vakitleri kaynağı: il/ilçe listesi ve vakitler
 // /api/fazilet?action=cities            (Türkiye illeri)
 // /api/fazilet?action=districts&il=46
 // /api/fazilet?action=times&path=/malatya/kuluncak
-// Not: Fazilet sitesi tek seferde dün/bugün/yarın (3 gün) verir. Uygulama her açılışta
+// Not: Kaynak site tek seferde dün/bugün/yarın (3 gün) verir. Uygulama her açılışta
 // bu günleri biriktirerek saklar.
 import { parseFaziletHtml } from './_parse.mjs';
 
