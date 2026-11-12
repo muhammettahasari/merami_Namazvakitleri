@@ -1,4 +1,4 @@
-// Ortak ayrıştırıcılar (Diyanet HTML tablosu ve Fazilet sayfa verisi)
+// Ortak ayrıştırıcılar (Diyanet HTML tablosu ve Verâ kaynak sayfası verisi)
 
 const AYLAR = {
   ocak: 1, şubat: 2, subat: 2, mart: 3, nisan: 4, mayıs: 5, mayis: 5, haziran: 6,
@@ -44,7 +44,7 @@ export function parseDiyanetHtml(html) {
   return days;
 }
 
-// Fazilet sayfasına gömülü {"timeZone":..,"days":[...]} verisini okur
+// Verâ kaynak sayfasına gömülü {"timeZone":..,"days":[...]} verisini okur
 export function parseFaziletHtml(html) {
   const t = html.replace(/\\\\"/g, '"').replace(/\\"/g, '"');
   const days = {};

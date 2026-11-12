@@ -1,5 +1,5 @@
 // Widget çizicileri: her stil, model'den HTML üretir.
-// Renk kuralı: Fazilet = yeşil, Diyanet = mavi. "top" hangi kaynağın üstte olacağını belirler.
+// Renk kuralı: Verâ = yeşil, Diyanet = mavi. "top" hangi kaynağın üstte olacağını belirler.
 (function (g) {
   'use strict';
   const { LABEL, countdown, fmtShort } = g.NV;
@@ -21,7 +21,7 @@
   const tehText = (m, s) => m.teh[s]?.text || '—';
   const empty = (m) => `<div class="wg-empty">Bu gün için veri yok.<br><small>İnternete bağlanınca güncellenecek.</small></div>`;
 
-  // 1) TABLO — 4x2: 5 sütun, üstte bir kaynak altta diğeri, 3. satır teheccüd + fazilet imsak/güneş
+  // 1) TABLO — 4x2: 5 sütun, üstte bir kaynak altta diğeri, alt satırlar: Verâ sabah namazı, Asr-ı Sânî, teheccüd
   function tablo(m, top, now, variant = '') {
     if (!m.hasData) return `<div class="wg wg-tablo ${variant}">${empty(m)}</div>`;
     const [a, b] = order(top);

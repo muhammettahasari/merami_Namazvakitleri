@@ -119,7 +119,7 @@
   const D_KEYS = ['imsak', 'gunes', 'ogle', 'ikindi', 'aksam', 'yatsi'];
   const F_KEYS = ['imsak', 'sabah', 'gunes', 'ogle', 'ikindi', 'aksam', 'yatsi'];
 
-  // Fazilet verisi yoksa: en yakın gerçek günün Diyanet'e göre farkını uygula (≈ tahmini)
+  // Verâ verisi yoksa: en yakın gerçek günün Diyanet'e göre farkını uygula (≈ tahmini)
   function estimateF(data, day) {
     const d = data.d?.[day];
     if (!d) return null;
