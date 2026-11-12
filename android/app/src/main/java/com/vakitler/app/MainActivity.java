@@ -30,6 +30,8 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
+        // Güncelleme denetimi her şeyden önce: başka bir yerde hata olsa bile düzeltilmiş sürüm gelebilsin
+        try { UpdateChecker.check(this, false); } catch (Throwable ignored) {}
         web = new WebView(this);
         FrameLayout box = new FrameLayout(this);
         box.addView(web, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));

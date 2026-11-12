@@ -37,8 +37,10 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
 
+    // Eski Android sürümlerinde olmayan komut kullanılırsa derleme durur (hatalı APK yayınlanmaz)
     lint {
-        abortOnError false
-        checkReleaseBuilds false
+        checkOnly 'NewApi'
+        abortOnError true
+        checkReleaseBuilds true
     }
 }
