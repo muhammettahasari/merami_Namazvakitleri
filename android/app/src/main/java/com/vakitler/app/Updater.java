@@ -60,15 +60,16 @@ final class Updater {
         boolean aF = m.fazTop;
         Model.Ev nx = m.nextTop();
         Model.Ev other = aF ? m.nextD : m.nextF;
-        String title = nx == null ? m.loc : ("Sıradaki: " + nx.name() + "  " + (aF ? "F " : "D ") + nx.hm
-                + (other != null ? "  ·  " + (aF ? "D " : "F ") + other.hm : ""));
-        String line = "Teheccüd  F " + m.tehF + "  ·  D " + m.tehD;
+        String title = nx == null ? m.loc : ("Sıradaki: " + nx.name() + "  " + (aF ? "V " : "D ") + nx.hm
+                + (other != null ? "  ·  " + (aF ? "D " : "V ") + other.hm : ""));
+        String line = "Teheccüd  V " + m.tehF + "  ·  D " + m.tehD;
 
         StringBuilder big = new StringBuilder();
         String[] rowsA = aF ? m.f : m.d, rowsB = aF ? m.d : m.f;
-        big.append(aF ? "Fazilet  " : "Diyanet  ").append(join(rowsA)).append('\n');
-        big.append(aF ? "Diyanet  " : "Fazilet  ").append(join(rowsB)).append('\n');
-        big.append("F İmsak ").append(m.fImsak).append(" · Güneş ").append(m.fGunes).append('\n');
+        big.append(aF ? "Verâ  " : "Diyanet  ").append(join(rowsA)).append('\n');
+        big.append(aF ? "Diyanet  " : "Verâ  ").append(join(rowsB)).append('\n');
+        big.append("Verâ Sabah namazı ").append(m.fSabah).append(" · Asr-ı Sânî ").append(m.asrSani).append('\n');
+        big.append("Oruç İmsak'ta başlar; Sabah saati namaz içindir.").append('\n');
         big.append(line);
 
         Intent open = new Intent(c, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);

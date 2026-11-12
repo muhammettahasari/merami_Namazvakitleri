@@ -16,7 +16,7 @@ import android.widget.Toast;
 public class PinActivity extends Activity {
 
     static final String[] NAMES = {
-            "Tablo (4×2) — 5 vakit, Fazilet ve Diyanet alt alta",
+            "Tablo (4×2) — 5 vakit, Verâ ve Diyanet alt alta",
             "Kompakt (2×2) — sıradaki vakit ve geri sayım",
             "Şerit (4×1) — tek satır",
             "Liste (2×4) — dikey liste"

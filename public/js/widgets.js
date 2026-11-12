@@ -4,19 +4,20 @@
   'use strict';
   const { LABEL, countdown, fmtShort } = g.NV;
 
-  const COLS = [['sabah', 'Sabah'], ['ogle', 'Öğle'], ['ikindi', 'İkindi'], ['aksam', 'Akşam'], ['yatsi', 'Yatsı']];
-  const SRC = { d: { name: 'Diyanet', short: 'D', cls: 'dy' }, f: { name: 'Fazilet', short: 'F', cls: 'fz' } };
+  // İlk sütun İmsak (oruç başlar) — iki kaynakta da imsak saati; Verâ'nın Sabah namazı vakti ayrı satırda
+  const COLS = [['sabah', 'İmsak'], ['ogle', 'Öğle'], ['ikindi', 'İkindi'], ['aksam', 'Akşam'], ['yatsi', 'Yatsı']];
+  const SRC = { d: { name: 'Diyanet', short: 'D', cls: 'dy' }, f: { name: 'Verâ', short: 'V', cls: 'fz' } };
 
   const v = (m, s, col) => {
     const x = m[s]; if (!x) return '—';
-    if (col === 'sabah') return s === 'd' ? x.imsak : x.sabah;
+    if (col === 'sabah') return x.imsak;
     return x[col] || '—';
   };
   const estMark = (m, s) => (s === 'f' && m.f?.est ? ' est' : '');
   const order = (top) => (top === 'diyanet' ? ['d', 'f'] : ['f', 'd']);
   const loc = (m) => m.loc?.short || m.loc?.label || '';
   const nextOf = (m, s) => m.next[s];
-  const nextName = (e, s) => (!e ? '—' : (s === 'd' && e.raw === 'imsak') ? 'İmsak' : LABEL[e.raw] || e.raw);
+  const nextName = (e, s) => (!e ? '—' : e.raw === 'sabah' ? 'Sabah n.' : LABEL[e.raw] || e.raw);
   const tehText = (m, s) => m.teh[s]?.text || '—';
   const empty = (m) => `<div class="wg-empty">Bu gün için veri yok.<br><small>İnternete bağlanınca güncellenecek.</small></div>`;
 
@@ -25,7 +26,7 @@
     if (!m.hasData) return `<div class="wg wg-tablo ${variant}">${empty(m)}</div>`;
     const [a, b] = order(top);
     const nx = nextOf(m, a) || nextOf(m, b);
-    const row = (s) => `<div class="tr ${SRC[s].cls}${estMark(m, s)}"><span class="src" data-tip="${s === 'd' ? 'D (mavi) = Diyanet' : 'F (yeşil) = Fazilet'}">${SRC[s].short}</span>` +
+    const row = (s) => `<div class="tr ${SRC[s].cls}${estMark(m, s)}"><span class="src" data-tip="${s === 'd' ? 'D (mavi) = Diyanet' : 'V (yeşil) = Verâ'}">${SRC[s].short}</span>` +
       COLS.map(([c]) => `<span class="c${m.cur.col === c ? ' on' : ''}">${v(m, s, c)}</span>`).join('') + '</div>';
     return `<div class="wg wg-tablo ${variant}">
       <div class="wh"><b>${loc(m)}</b><span>${fmtShort(m.today)}</span>
@@ -33,10 +34,11 @@
       <div class="tr th"><span class="src"></span>${COLS.map(([c, l]) => `<span class="c${m.cur.col === c ? ' on' : ''}">${l}</span>`).join('')}</div>
       ${row(a)}${row(b)}
       <div class="t3">
-        <span class="teh"><i>Teheccüd</i> <em class="fz${estMark(m, 'f')}">${tehText(m, 'f')}</em> <em class="dy">${tehText(m, 'd')}</em></span>
-        <span class="fz${estMark(m, 'f')}"><i>İmsak</i> ${m.f?.imsak || '—'}</span>
+        <span class="fz${estMark(m, 'f')}"><i>Sabah n.</i> ${m.f?.sabah || '—'}</span>
         <span class="fz${estMark(m, 'f')}"><i>Güneş</i> ${m.f?.gunes || '—'}</span>
+        <span class="asx"><i>Asr-ı Sânî</i> ${m.asrSani || '—'}</span>
       </div>
+      <div class="t3 t4"><span class="teh"><i>Teheccüd</i> <em class="fz${estMark(m, 'f')}">V ${tehText(m, 'f')}</em> <em class="dy">D ${tehText(m, 'd')}</em></span></div>
     </div>`;
   }
 
@@ -71,8 +73,9 @@
     return `<div class="wg wg-liste">
       <div class="lh"><span>${loc(m)}</span><span class="${SRC[a].cls}">${SRC[a].short}</span><span class="${SRC[b].cls}">${SRC[b].short}</span></div>
       ${rows}
-      <div class="lx fz${estMark(m, 'f')}"><span>F İmsak · Güneş</span><b>${m.f?.imsak || '—'} · ${m.f?.gunes || '—'}</b></div>
-      <div class="lx"><span>Teheccüd</span><b><em class="fz${estMark(m, 'f')}">${tehText(m, 'f')}</em><em class="dy">${tehText(m, 'd')}</em></b></div>
+      <div class="lx fz${estMark(m, 'f')}"><span>V Sabah namazı</span><b>${m.f?.sabah || '—'}</b></div>
+      <div class="lx asx"><span>Asr-ı Sânî</span><b>${m.asrSani || '—'}</b></div>
+      <div class="lx"><span>Teheccüd</span><b><em class="fz${estMark(m, 'f')}">V ${tehText(m, 'f')}</em><em class="dy">D ${tehText(m, 'd')}</em></b></div>
     </div>`;
   }
 

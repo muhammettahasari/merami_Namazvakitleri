@@ -17,7 +17,7 @@ import java.util.List;
  */
 final class Model {
 
-    static final String[] COL_LABEL = {"Sabah", "Öğle", "İkindi", "Akşam", "Yatsı"};
+    static final String[] COL_LABEL = {"İmsak", "Öğle", "İkindi", "Akşam", "Yatsı"};
     private static final String[] D_KEYS = {"imsak", "gunes", "ogle", "ikindi", "aksam", "yatsi"};
     private static final String[] F_KEYS = {"imsak", "sabah", "gunes", "ogle", "ikindi", "aksam", "yatsi"};
     private static final String[] AY = {"Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"};
@@ -34,11 +34,11 @@ final class Model {
     String msg = "";
     String loc = "";
     String date = "";
-    boolean fazTop = true;      // widget'ta Fazilet üstte mi
+    boolean fazTop = true;      // widget'ta Verâ üstte mi
     boolean hasD, hasF, fEst;
     final String[] d = new String[5];
     final String[] f = new String[5];
-    String fImsak = "—", fGunes = "—", dGunes = "—";
+    String fImsak = "—", fSabah = "—", fGunes = "—", dGunes = "—", asrSani = "—";
     String tehD = "—", tehF = "—";
     int curCol = -1;
     Ev nextD, nextF;
@@ -49,7 +49,7 @@ final class Model {
     static String label(String k) {
         switch (k) {
             case "imsak": return "İmsak";
-            case "sabah": return "Sabah";
+            case "sabah": return "Sabah n.";
             case "gunes": return "Güneş";
             case "ogle": return "Öğle";
             case "ikindi": return "İkindi";
@@ -122,12 +122,13 @@ final class Model {
             JSONObject d = T.optJSONObject("d"), f = T.optJSONObject("f");
             m.hasD = d != null; m.hasF = f != null; m.fEst = T.optBoolean("fe", false);
             String[] dk = {"imsak", "ogle", "ikindi", "aksam", "yatsi"};
-            String[] fk = {"sabah", "ogle", "ikindi", "aksam", "yatsi"};
+            String[] fk = {"imsak", "ogle", "ikindi", "aksam", "yatsi"}; // ilk sütun: İmsak (oruç başlar)
             for (int i = 0; i < 5; i++) {
                 m.d[i] = s(d, dk[i]);
                 m.f[i] = (m.fEst && f != null ? "≈" : "") + s(f, fk[i]);
             }
-            m.fImsak = s(f, "imsak"); m.fGunes = s(f, "gunes"); m.dGunes = s(d, "gunes");
+            m.fImsak = s(f, "imsak"); m.fSabah = (m.fEst && f != null ? "≈" : "") + s(f, "sabah"); m.fGunes = s(f, "gunes"); m.dGunes = s(d, "gunes");
+            m.asrSani = T.optString("as", "—"); if (m.asrSani.isEmpty()) m.asrSani = "—";
 
             List<Ev> dEv = events(T, N, today, "d", D_KEYS);
             List<Ev> fEv = events(T, N, today, "f", F_KEYS);

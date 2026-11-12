@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Namaz Vakitleri</title>
-  <meta name="description" content="Diyanet ve Fazilet namaz vakitleri yan yana, internetsiz çalışır.">
+  <meta name="description" content="Diyanet ve Verâ namaz vakitleri yan yana, internetsiz çalışır.">
   <meta name="theme-color" content="#0f2a3d">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -44,8 +44,8 @@
         <div class="date"><b id="dMiladi"></b><span id="dHicri"></span><span id="dayPhase" class="phase"></span></div>
         <div class="srcbar" role="note">
           <span class="srcchip dy" data-tip="MAVİ = Diyanet İşleri Başkanlığı vakitleri (namazvakitleri.diyanet.gov.tr). Diyanet'te sabah namazı vakti “İmsak” olarak verilir."><i></i>Diyanet</span>
-          <span class="srcchip fz" data-tip="YEŞİL = Fazilet Takvimi vakitleri (fazilettakvimi.com). Sabah bölümü İmsak, Sabah ve Güneş olarak üçe ayrılır."><i></i>Fazilet</span>
-          <span class="srcchip est" data-tip="≈ işaretli saatler tahminidir: Fazilet o gün için henüz indirilmedi. İnternete bağlanınca gerçek değer gelir.">≈ tahmini</span>
+          <span class="srcchip fz" data-tip="YEŞİL = Verâ vakitleri. Sabah bölümü İmsak (oruç başlar), Sabah namazı ve Güneş olarak üçe ayrılır."><i></i>Verâ</span>
+          <span class="srcchip est" data-tip="≈ işaretli saatler tahminidir: Verâ vakti o gün için henüz indirilmedi. İnternete bağlanınca gerçek değer gelir.">≈ tahmini</span>
           <span class="srcinfo" data-tip="Renklere dokunun veya üzerine gelin: açıklama görünür.">ⓘ</span>
         </div>
         <div id="hero" class="hero"></div>
@@ -53,7 +53,7 @@
         <div id="cmp"></div>
         <h2 class="sec">Vakitler <small>üstte <span id="topLbl"></span></small></h2>
         <div id="list" class="cards"></div>
-        <p class="legend"><span class="dot dy"></span>Mavi: Diyanet <span class="dot fz"></span>Yeşil: Fazilet <span class="est-ex">≈ tahmini</span></p>
+        <p class="legend"><span class="dot dy"></span>Mavi: Diyanet <span class="dot fz"></span>Yeşil: Verâ <span class="est-ex">≈ tahmini</span></p>
       </section>
 
       <!-- İMSAKİYE -->
@@ -61,8 +61,9 @@
         <h2 class="sec">Kayıtlı günler <small id="calInfo"></small></h2>
         <div class="srcbar sticky" role="note">
           <span class="srcchip dy" data-tip="D satırı (mavi) = Diyanet. Sabah sütununda Diyanet'in İmsak vakti yazar."><i></i>D · Diyanet</span>
-          <span class="srcchip fz" data-tip="F satırı (yeşil) = Fazilet. Sabah sütununda Fazilet'in Sabah vakti yazar."><i></i>F · Fazilet</span>
-          <span class="srcchip est" data-tip="≈ = tahmini Fazilet saati (henüz indirilmemiş gün).">≈ tahmini</span>
+          <span class="srcchip fz" data-tip="V satırı (yeşil) = Verâ. Altındaki küçük satırda Verâ'nın Sabah namazı vakti ve Asr-ı Sânî yazar."><i></i>V · Verâ</span>
+          <span class="srcchip as" data-tip="Asr-ı Sânî: gölge boyunun 2 katı (İmam-ı Âzam). Diyanet ikindisi gölgenin 1 katıdır (Asr-ı evvel).">◐ Asr-ı Sânî</span>
+          <span class="srcchip est" data-tip="≈ = tahmini Verâ saati (henüz indirilmemiş gün).">≈ tahmini</span>
         </div>
         <div id="cal" class="cal"></div>
       </section>
@@ -77,7 +78,7 @@
       <section id="v-wg" class="view">
         <h2 class="sec">Widget stilleri</h2>
         <div class="seg" id="wgTopSeg" role="radiogroup" aria-label="Widget'ta üstte">
-          <button data-v="fazilet" class="fz">Fazilet üstte</button>
+          <button data-v="fazilet" class="fz">Verâ üstte</button>
           <button data-v="diyanet" class="dy">Diyanet üstte</button>
         </div>
         <div id="gallery" class="gallery"></div>
@@ -98,12 +99,12 @@
 
         <h2 class="sec">Görünüm</h2>
         <div class="field"><span>Ana ekranda üstte</span>
-          <div class="seg" id="appTopSeg"><button data-v="diyanet" class="dy">Diyanet</button><button data-v="fazilet" class="fz">Fazilet</button></div></div>
+          <div class="seg" id="appTopSeg"><button data-v="diyanet" class="dy">Diyanet</button><button data-v="fazilet" class="fz">Verâ</button></div></div>
         <div class="field"><span>Tema<small>Üstteki ☀️/🌙 düğmesiyle de değiştirilebilir</small></span>
           <div class="seg" id="themeSeg"><button data-v="auto">Otomatik</button><button data-v="light">Gündüz</button><button data-v="dark">Gece</button></div></div>
         <button class="btn wide" id="setWg">Widget stilleri →</button>
         <button class="btn wide" id="setInstall">📲 Uygulamayı telefona yükle</button>
-        <label class="field sw"><span>Fazilet verisi olmayan günlerde tahmini göster <small>(≈ işaretli; en yakın gerçek günün Diyanet farkına göre)</small></span>
+        <label class="field sw"><span>Verâ verisi olmayan günlerde tahmini göster <small>(≈ işaretli; en yakın gerçek günün Diyanet farkına göre)</small></span>
           <input type="checkbox" id="estChk"><i></i></label>
         <label class="field sw" id="lockRow" hidden><span>🔒 Kilit ekranında vakitleri göster <small>Sıradaki vakit, geri sayım ve günün vakitleri kilit ekranında bildirim olarak durur</small></span>
           <input type="checkbox" id="lockChk"><i></i></label>
@@ -112,7 +113,7 @@
         <div id="dataInfo" class="muted small"></div>
         <button id="forceSync" class="btn">Şimdi tümünü güncelle</button>
         <p class="muted small" id="verInfo"></p>
-        <p class="muted small">Kaynaklar: namazvakitleri.diyanet.gov.tr (yıllık tablo, ~1 yıl) ve namaz-vakitleri.fazilettakvimi.com (site tek seferde dün/bugün/yarın verir; uygulama her açılışta biriktirir).</p>
+        <p class="muted small">Diyanet vakitleri yılın tamamı için indirilir. Verâ vakitleri tek seferde dün/bugün/yarın olarak gelir; uygulama her açılışta yeni günleri biriktirir. Asr-ı Sânî, ilçenin koordinatına göre astronomik olarak hesaplanır.</p>
       </section>
     </main>
 
@@ -140,7 +141,7 @@
       <h3>İl / ilçe ekle</h3>
       <label>İl<select id="selIl" required><option value="">Yükleniyor…</option></select></label>
       <label>İlçe (Diyanet)<select id="selIlce" required disabled><option value="">Önce il seçin</option></select></label>
-      <label>Fazilet konumu<select id="selFz" disabled><option value="">Önce il seçin</option></select>
+      <label>Verâ konumu<select id="selFz" disabled><option value="">Önce il seçin</option></select>
         <small class="muted">Otomatik eşleştirilir, gerekirse değiştirin.</small></label>
       <p id="addMsg" class="msg"></p>
       <div class="row">

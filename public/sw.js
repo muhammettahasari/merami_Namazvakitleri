@@ -1,6 +1,6 @@
 // Service worker: uygulama dosyalarını önbelleğe alır, internetsiz açılır.
 // Vakit verileri localStorage'da tutulur; API cevapları önbelleğe alınmaz (her zaman taze).
-const VERSION = 'nv-1.8.0';
+const VERSION = 'nv-1.9.0';
 const SHELL = [
   '/', '/widget.html',
   '/css/app.css', '/css/widgets.css',

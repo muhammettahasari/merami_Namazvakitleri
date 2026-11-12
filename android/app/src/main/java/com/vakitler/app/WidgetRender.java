@@ -8,7 +8,7 @@ import android.content.Intent;
 import android.os.SystemClock;
 import android.widget.RemoteViews;
 
-/** Tüm widget'ları çizer. Renk kuralı: Fazilet yeşil, Diyanet mavi; "üstteki" kaynak ayardan gelir. */
+/** Tüm widget'ları çizer. Renk kuralı: Verâ yeşil, Diyanet mavi; "üstteki" kaynak ayardan gelir. */
 final class WidgetRender {
     private WidgetRender() {}
 
@@ -73,8 +73,8 @@ final class WidgetRender {
         Model.Ev nx = m.nextTop();
         v.setTextViewText(R.id.t_next, nx == null ? "" : nx.name());
         countdown(v, R.id.ch_next, nx);
-        v.setTextViewText(R.id.t_teh, "Teheccüd  F " + m.tehF + "  ·  D " + m.tehD);
-        v.setTextViewText(R.id.t_extra, "İmsak " + m.fImsak + " · Güneş " + m.fGunes);
+        v.setTextViewText(R.id.t_teh, "Teheccüd  V " + m.tehF + "  ·  D " + m.tehD);
+        v.setTextViewText(R.id.t_extra, "Sabah n. " + m.fSabah + " · Asr-ı Sânî " + m.asrSani);
         return v;
     }
 
@@ -83,7 +83,7 @@ final class WidgetRender {
         int src = id(c, p + "_src");
         v.setInt(row, "setBackgroundResource", isF ? R.drawable.row_fz : R.drawable.row_dy);
         v.setInt(src, "setBackgroundResource", isF ? R.drawable.badge_fz : R.drawable.badge_dy);
-        v.setTextViewText(src, isF ? "F" : "D");
+        v.setTextViewText(src, isF ? "V" : "D");
         String[] t = isF ? m.f : m.d;
         for (int i = 0; i < 5; i++) {
             int tv = id(c, p + i);
@@ -118,7 +118,7 @@ final class WidgetRender {
     private static void box(RemoteViews v, int box, int src, int time, int ch, boolean isF, Model.Ev e, Model m) {
         v.setInt(box, "setBackgroundResource", isF ? R.drawable.box_fz : R.drawable.box_dy);
         String name = e == null ? "" : " · " + e.name();
-        v.setTextViewText(src, (isF ? "Fazilet" : "Diyanet") + name);
+        v.setTextViewText(src, (isF ? "Verâ" : "Diyanet") + name);
         v.setTextViewText(time, e == null ? "—" : ((isF && m.fEst ? "≈" : "") + e.hm));
         countdown(v, ch, e);
     }
@@ -158,8 +158,8 @@ final class WidgetRender {
         v.setOnClickPendingIntent(R.id.root, open(c));
         boolean aF = aIsF(m);
         v.setTextViewText(R.id.l_loc, m.ok ? m.loc : m.msg);
-        v.setTextViewText(R.id.l_ha, aF ? "F" : "D");
-        v.setTextViewText(R.id.l_hb, aF ? "D" : "F");
+        v.setTextViewText(R.id.l_ha, aF ? "V" : "D");
+        v.setTextViewText(R.id.l_hb, aF ? "D" : "V");
         v.setInt(R.id.l_ha, "setBackgroundResource", aF ? R.drawable.badge_fz : R.drawable.badge_dy);
         v.setInt(R.id.l_hb, "setBackgroundResource", aF ? R.drawable.badge_dy : R.drawable.badge_fz);
         for (int i = 0; i < 5; i++) {
@@ -171,8 +171,8 @@ final class WidgetRender {
             v.setTextColor(b, aF ? DY : FZ);
             v.setInt(row, "setBackgroundResource", i == m.curCol && m.ok ? R.drawable.cell_on : R.drawable.cell_off);
         }
-        v.setTextViewText(R.id.l_x1, m.fImsak + " · " + m.fGunes);
-        v.setTextViewText(R.id.l_x2, "F " + m.tehF + "\nD " + m.tehD);
+        v.setTextViewText(R.id.l_x1, m.fSabah + " · " + m.asrSani);
+        v.setTextViewText(R.id.l_x2, "V " + m.tehF + "\nD " + m.tehD);
         return v;
     }
 }

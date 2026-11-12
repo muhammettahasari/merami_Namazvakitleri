@@ -6,9 +6,9 @@
   const LKEY = (id) => 'nv:loc:' + id;
   const DEFAULTS = {
     appTop: 'diyanet',      // Ana ekranda üstte görünen kaynak
-    widgetTop: 'fazilet',   // Widget'larda üstte görünen kaynak (Fazilet yeşil üstte)
+    widgetTop: 'fazilet',   // Widget'larda üstte görünen kaynak (Verâ yeşil üstte; iç anahtar 'fazilet')
     widgetStyle: 'tablo',
-    estimate: true,         // Fazilet verisi olmayan günler için tahmin
+    estimate: true,         // Verâ verisi olmayan günler için tahmin
     theme: 'auto',
   };
 
@@ -66,6 +66,23 @@
     return j;
   }
 
+  // İlçe koordinatı (Asr-ı Sânî hesabı için) — Open-Meteo konum servisi, il adıyla eşleştirilir
+  async function geocode(ilName, ilceName) {
+    const want = norm(ilName);
+    const find = async (q, codes) => {
+      const u = 'https://geocoding-api.open-meteo.com/v1/search?' + new URLSearchParams({ name: q, count: 20, language: 'tr', countryCode: 'TR', format: 'json' });
+      const r = await fetch(u); if (!r.ok) return null;
+      const j = await r.json();
+      const list = (j.results || []).filter((x) => norm(x.admin1) === want || norm(x.admin1).startsWith(want) || want.startsWith(norm(x.admin1)));
+      const best = list.find((x) => codes.includes(x.feature_code)) || list.find((x) => norm(x.name) === norm(q)) || list[0];
+      return best ? { lat: +best.latitude.toFixed(4), lon: +best.longitude.toFixed(4) } : null;
+    };
+    try {
+      if (ilceName && norm(ilceName) !== want) { const c = await find(ilceName, ['PPLA2', 'PPLA3', 'PPL']); if (c) return c; }
+      return await find(ilName, ['PPLA', 'PPLA2']);
+    } catch (e) { return null; }
+  }
+
   // Bir konumun verisini iki kaynaktan çeker ve biriktirir
   async function syncLoc(loc, { force = false } = {}) {
     const data = loadLoc(loc.id);
@@ -80,15 +97,19 @@
       .catch((e) => res.errors.push('Diyanet: ' + e.message)));
     if (needF && loc.fazilet?.path) jobs.push(api('fazilet', { action: 'times', path: loc.fazilet.path })
       .then((j) => { Object.assign(data.f ||= {}, j.days); res.f = Object.keys(j.days).length; })
-      .catch((e) => res.errors.push('Fazilet: ' + e.message)));
+      .catch((e) => res.errors.push('Verâ: ' + e.message)));
+    const ilName = loc.il || (loc.label || '').split(',').pop().trim();
+    if (!loc.coord && ilName) jobs.push(geocode(ilName, loc.diyanet?.name).then((c) => { if (c) res.coord = c; }));
     await Promise.all(jobs);
     saveLoc(loc.id, data);
+    if (res.coord) loc.coord = res.coord;
     const s = load();
     const l = s.locations.find((x) => x.id === loc.id);
     if (l) {
       l.updated ||= {}; l.updatedAt ||= {};
       if (res.d) { l.updated.d = today; l.updatedAt.d = Date.now(); }
       if (res.f) { l.updated.f = today; l.updatedAt.f = Date.now(); }
+      if (res.coord) l.coord = res.coord;
       save(s);
     }
     return res;
@@ -120,6 +141,35 @@
     let f = data.f?.[day] || null;
     if (!f && estimate) f = estimateF(data, day);
     return { d, f };
+  }
+
+  // ---------- Asr-ı Sânî (gölge boyu 2 katı + öğle gölgesi) ----------
+  // Asr-ı evvel (Diyanet'in ikindisi): gölge = 1 × boy + fey-i zeval (İmameyn ve diğer mezhepler).
+  // Asr-ı sânî: gölge = 2 × boy + fey-i zeval (İmam-ı Âzam Ebû Hanîfe).
+  // Diyanet ikindisine, gölgenin 1 kattan 2 kata uzaması için geçen süre eklenir; böylece
+  // Diyanet'in temkini korunur ve boylam hatası etkilemez. Yalnızca enlem ve güneşin sapması gerekir.
+  const RAD = Math.PI / 180;
+  function sunDecl(dayIso) {
+    const d = new Date(dayIso + 'T12:00:00Z');
+    const n = (d - Date.UTC(2000, 0, 1, 12)) / 864e5;
+    const L = (280.46 + 0.9856474 * n) % 360, g = (357.528 + 0.9856003 * n) % 360;
+    const lam = L + 1.915 * Math.sin(g * RAD) + 0.02 * Math.sin(2 * g * RAD);
+    const eps = 23.439 - 0.0000004 * n;
+    return Math.asin(Math.sin(eps * RAD) * Math.sin(lam * RAD)) / RAD;
+  }
+  // Gölge = n×boy + öğle gölgesi olduğu andaki saat açısı (derece)
+  function asrHourAngle(lat, decl, n) {
+    const A = Math.atan(1 / (n + Math.tan(Math.abs(lat - decl) * RAD)));
+    const c = (Math.sin(A) - Math.sin(lat * RAD) * Math.sin(decl * RAD)) / (Math.cos(lat * RAD) * Math.cos(decl * RAD));
+    if (c < -1 || c > 1) return null;
+    return Math.acos(c) / RAD;
+  }
+  function asrSani(dayIso, ikindiHm, lat) {
+    if (!ikindiHm || lat == null || !Number.isFinite(+lat)) return null;
+    const decl = sunDecl(dayIso);
+    const h1 = asrHourAngle(+lat, decl, 1), h2 = asrHourAngle(+lat, decl, 2);
+    if (h1 == null || h2 == null) return null;
+    return fromMin(toMin(ikindiHm) + (h2 - h1) * 4); // 1° saat açısı = 4 dakika
   }
 
   // Teheccüd: gecenin son üçte biri (akşam → ertesi imsak)
@@ -175,6 +225,7 @@
     return {
       loc, today, now,
       hicri: T.d?.hicri || T.f?.hicri || '',
+      asrSani: asrSani(today, T.d?.ikindi, loc.coord?.lat),
       d: T.d, f: T.f, tomorrow: N,
       teh: { d: teh('d'), f: teh('f') },
       next: { d: nextOf(dEv), f: nextOf(fEv) },
@@ -203,6 +254,7 @@
       const o = {};
       if (T.d) o.d = { imsak: T.d.imsak, gunes: T.d.gunes, ogle: T.d.ogle, ikindi: T.d.ikindi, aksam: T.d.aksam, yatsi: T.d.yatsi };
       if (T.f) { o.f = { imsak: T.f.imsak, sabah: T.f.sabah, gunes: T.f.gunes, ogle: T.f.ogle, ikindi: T.f.ikindi, aksam: T.f.aksam, yatsi: T.f.yatsi }; o.fe = !!T.f.est; }
+      const as = asrSani(day, T.d?.ikindi, loc.coord?.lat); if (as) o.as = as;
       if (T.d && N.d) o.td = teheccud(day, T.d.aksam, next, N.d.imsak)?.text || '';
       if (T.f && N.f) o.tf = teheccud(day, T.f.aksam, next, N.f.imsak)?.text || '';
       days[day] = o;
@@ -211,7 +263,7 @@
   }
 
   g.NV = {
-    nativeData, load, save, loadLoc, saveLoc, removeLoc, activeLoc, api, syncLoc, model, dayData,
+    geocode, asrSani, sunDecl, nativeData, load, save, loadLoc, saveLoc, removeLoc, activeLoc, api, syncLoc, model, dayData,
     iso, addDays, toMin, fromMin, titleTr, norm, fmtDate, fmtShort, countdown, teheccud, LABEL, D_KEYS, F_KEYS, pad,
   };
 })(window);

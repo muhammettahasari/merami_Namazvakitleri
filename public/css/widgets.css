@@ -19,7 +19,7 @@
 .wg-empty { height: 100%; display: grid; place-content: center; text-align: center; font-size: 4cqw; color: var(--wmut); padding: 4cqw; }
 
 /* ---------- TABLO ---------- */
-.wg-tablo { display: grid; grid-template-rows: auto auto 1fr 1fr auto; padding: 3.2cqw 3.6cqw; gap: 0.6cqw; }
+.wg-tablo { display: grid; grid-template-rows: auto auto 1fr 1fr auto auto; padding: 3cqw 3.6cqw; gap: 0.5cqw; }
 .wg-tablo .wh { display: flex; align-items: baseline; gap: 2cqw; font-size: 3.1cqw; color: var(--wmut); }
 .wg-tablo .wh b { color: var(--wink); font-size: 3.6cqw; }
 .wg-tablo .wh .nx { margin-left: auto; font-weight: 700; color: var(--wink); }
@@ -36,6 +36,8 @@
 .wg-tablo .t3 .teh { flex: 1; overflow: hidden; text-overflow: ellipsis; }
 .wg-tablo .t3 em { font-style: normal; font-weight: 700; color: var(--c); margin-right: 1.2cqw; }
 .wg-tablo .t3 > span.fz { color: var(--c); font-weight: 700; }
+.wg-tablo .t3 > span.asx { margin-left: auto; font-weight: 700; color: var(--won); }
+.wg-tablo .t4 { border-top: 0; padding-top: 0; }
 
 /* büyük (uygulama içi karşılaştırma) */
 .wg-tablo.big { aspect-ratio: 2.05 / 1; container-type: normal; }
@@ -77,7 +79,8 @@
 .wg-serit .sc.teh { border-left: 1px dashed var(--wline); border-radius: 0; }
 
 /* ---------- LİSTE ---------- */
-.wg-liste { display: grid; grid-template-rows: auto repeat(5, 1fr) auto auto; padding: 5cqw; gap: 1.6cqw; }
+.wg-liste { display: grid; grid-template-rows: auto repeat(5, 1fr) auto auto auto; padding: 5cqw; gap: 1.4cqw; }
+.wg-liste .lx.asx b { color: var(--won); }
 .wg-liste .lh { display: grid; grid-template-columns: 1fr 1fr 1fr; font-size: 5.4cqw; color: var(--wmut); text-align: center; }
 .wg-liste .lh span:first-child { text-align: left; color: var(--wink); font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .wg-liste .lh .dy, .wg-liste .lh .fz { color: #fff; background: var(--c); border-radius: 3cqw; font-weight: 800; margin: 0 2cqw; }

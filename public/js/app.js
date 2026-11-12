@@ -5,7 +5,7 @@
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
-  const APP_VER = '1.8';
+  const APP_VER = '1.9';
   let view = 'home';
   let syncing = false;
 
@@ -35,7 +35,7 @@
     const s = NV.load(); const loc = NV.activeLoc(s);
     $('#locName').textContent = loc ? loc.label : 'Konum seçin';
     if (!loc) {
-      $('#hero').innerHTML = `<div class="welcome"><h1>Hoş geldiniz</h1><p>Diyanet ve Fazilet vakitlerini alt alta görmek için yaşadığınız ili seçin.</p><button class="btn primary" id="wAdd">İl seç</button></div>`;
+      $('#hero').innerHTML = `<div class="welcome"><h1>Hoş geldiniz</h1><p>Diyanet ve Verâ vakitlerini alt alta görmek için yaşadığınız ili seçin.</p><button class="btn primary" id="wAdd">İl seç</button></div>`;
       $('#cmp').innerHTML = ''; $('#list').innerHTML = ''; $('#dMiladi').textContent = NV.fmtDate(NV.iso(new Date())); $('#dHicri').textContent = '';
       $('#wAdd').onclick = openAdd;
       return;
@@ -44,7 +44,7 @@
     const m = NV.model(loc, now);
     const top = s.settings.appTop === 'fazilet' ? 'f' : 'd';
     const bot = top === 'd' ? 'f' : 'd';
-    const NAME = { d: 'Diyanet', f: 'Fazilet' }, CLS = { d: 'dy', f: 'fz' };
+    const NAME = { d: 'Diyanet', f: 'Verâ' }, CLS = { d: 'dy', f: 'fz' };
     $('#dMiladi').textContent = NV.fmtDate(m.today);
     $('#dHicri').textContent = m.hicri;
     $('#topLbl').textContent = NAME[top];
@@ -90,24 +90,30 @@
       const d = y - x; return d === 0 ? '=' : (d > 0 ? '+' : '−') + Math.abs(d) + ' dk';
     };
     const rows = [
-      { k: 'sabah', l: 'Sabah', sub: 'Diyanet İmsak · Fazilet Sabah', d: val('d', 'imsak'), f: val('f', 'sabah') },
+      { k: 'imsak', l: 'İmsak', sub: 'Oruç başlar · sahur biter', d: val('d', 'imsak'), f: val('f', 'imsak'),
+        tip: 'Oruç tutacaklar yemeyi-içmeyi bu saatte bırakır. Sahur İmsak\'ta biter.' },
+      { k: 'sabah', l: 'Sabah namazı', sub: 'Oruç için değil, namaz için', d: val('d', 'imsak'), f: val('f', 'sabah'),
+        note: { d: 'İmsak ile girer' }, tip: 'Sabah namazının kılınacağı vakit. Verâ, imsaktan sonra ihtiyat payı bırakır. Bu saate kadar yemeye devam edilmez; oruç İmsak\'ta başlar.' },
+      { k: 'gunes', l: 'Güneş', sub: 'Sabah namazının son vakti', d: val('d', 'gunes'), f: val('f', 'gunes') },
       { k: 'ogle', l: 'Öğle', d: val('d', 'ogle'), f: val('f', 'ogle') },
-      { k: 'ikindi', l: 'İkindi', d: val('d', 'ikindi'), f: val('f', 'ikindi') },
-      { k: 'aksam', l: 'Akşam', d: val('d', 'aksam'), f: val('f', 'aksam') },
+      { k: 'ikindi', l: 'İkindi', sub: 'Asr-ı evvel: gölge 1 katı', d: val('d', 'ikindi'), f: val('f', 'ikindi'), asr: true },
+      { k: 'aksam', l: 'Akşam', sub: 'İftar vakti', d: val('d', 'aksam'), f: val('f', 'aksam') },
       { k: 'yatsi', l: 'Yatsı', d: val('d', 'yatsi'), f: val('f', 'yatsi') },
     ];
+    const curKey = (m.cur[top] || m.cur[bot])?.raw || m.cur.col; // şu anki vakit: imsak, sabah, gunes, ogle…
     const card = (r) => {
-      const lines = [top, bot].map((src) => `<div class="ln ${CLS[src]}${est(src)}" data-tip="${src === 'd' ? 'Mavi = Diyanet' : 'Yeşil = Fazilet'}${est(src) ? ' (≈ tahmini)' : ''}"><span>${NAME[src]}</span><b>${r[src]}</b></div>`).join('');
-      return `<div class="card${m.cur.col === r.k ? ' on' : ''}"><div class="cl"><b>${r.l}</b>${r.sub ? `<small>${r.sub}</small>` : ''}<em>${diff(r[top], r[bot])}</em></div><div class="cv">${lines}</div></div>`;
+      const lines = [top, bot].map((src) => `<div class="ln ${CLS[src]}${est(src)}" data-tip="${src === 'd' ? 'Mavi = Diyanet' : 'Yeşil = Verâ'}${est(src) ? ' (≈ tahmini)' : ''}"><span>${NAME[src]}${r.note?.[src] ? ` <i>· ${r.note[src]}</i>` : ''}</span><b>${r[src]}</b></div>`).join('');
+      const asr = r.asr ? `<div class="ln as" data-tip="Asr-ı Sânî: cisimlerin gölgesi, öğle vaktindeki gölgesine ek olarak boyunun 2 katı olunca. İmam-ı Âzam Ebû Hanîfe'nin görüşü; ihtiyatlı olan ikindiyi bu vakitten sonra kılmaktır. Diyanet'in ikindisi gölgenin 1 katı (Asr-ı evvel) olduğu vakittir.">
+          <span>Asr-ı Sânî <i>· gölge 2 katı</i></span><b>${m.asrSani || (navigator.onLine ? 'hesaplanıyor…' : '—')}</b></div>` : '';
+      return `<div class="card${curKey === r.k ? ' on' : ''}${r.k === 'imsak' ? ' imsak' : ''}"${r.tip ? ` data-tip="${r.tip}"` : ''}><div class="cl"><b>${r.l}</b>${r.sub ? `<small>${r.sub}</small>` : ''}<em>${diff(r[top], r[bot])}</em></div><div class="cv">${lines}${asr}</div></div>`;
     };
-    const extra = `<div class="card extra"><div class="cl"><b>Fazilet ek</b><small>sabah bölümü</small></div><div class="cv">
-        <div class="ln fz${est('f')}"><span>İmsak</span><b>${val('f', 'imsak')}</b></div>
-        <div class="ln fz${est('f')}"><span>Sabah</span><b>${val('f', 'sabah')}</b></div>
-        <div class="ln fz${est('f')}"><span>Güneş</span><b>${val('f', 'gunes')}</b></div>
-        <div class="ln dy"><span>Diyanet Güneş</span><b>${val('d', 'gunes')}</b></div></div></div>`;
     const teh = `<div class="card teh"><div class="cl"><b>Teheccüd</b><small>gecenin son üçte biri</small></div><div class="cv">
         ${[top, bot].map((src) => `<div class="ln ${CLS[src]}${est(src)}"><span>${NAME[src]}</span><b>${m.teh[src]?.text || '—'}</b></div>`).join('')}</div></div>`;
-    $('#list').innerHTML = rows.map(card).join('') + teh + extra;
+    const oruc = `<details class="oruc"><summary>🌙 Oruç tutacaklar dikkat: Sahur <b>İmsak</b>'ta biter</summary>
+        <p><b>İmsak</b> vaktinde tan yeri ağarır ve oruç başlar; yemek-içmek bu saatte bırakılır.</p>
+        <p><b>Sabah namazı</b> saati oruç için değil, <b>namaz için</b>dir. Verâ, sabah namazını imsaktan bir süre sonra kılmayı ihtiyatlı bulduğu için bu saati ayrıca verir. Sabah saatine kadar yemeye devam edilmez.</p>
+        <p>Diyanet'te sabah namazının vakti İmsak ile girer, ayrı bir “sabah” saati yoktur.</p></details>`;
+    $('#list').innerHTML = oruc + rows.map(card).join('') + teh;
   }
 
   // Saniyelik geri sayım (tam yeniden çizim dakikada bir)
@@ -127,16 +133,18 @@
     const days = Object.keys(data.d || {}).concat(Object.keys(data.f || {})).filter((d) => d >= today);
     const uniq = [...new Set(days)].sort().slice(0, 60);
     const realF = Object.keys(data.f || {}).filter((d) => d >= today).length;
-    $('#calInfo').textContent = `Diyanet ${Object.keys(data.d || {}).filter((d) => d >= today).length} gün · Fazilet ${realF} gün (gerçek)`;
+    $('#calInfo').textContent = `Diyanet ${Object.keys(data.d || {}).filter((d) => d >= today).length} gün · Verâ ${realF} gün (gerçek)`;
     const top = s.settings.appTop === 'fazilet' ? ['f', 'd'] : ['d', 'f'];
     const C = { d: 'dy', f: 'fz' };
-    const head = `<div class="cr ch"><span>Tarih</span><span></span><span>Sabah</span><span>Öğle</span><span>İkindi</span><span>Akşam</span><span>Yatsı</span></div>`;
+    const head = `<div class="cr ch"><span>Tarih</span><span></span><span>İmsak</span><span>Öğle</span><span>İkindi</span><span>Akşam</span><span>Yatsı</span></div>`;
     const body = uniq.map((day) => {
       const { d, f } = NV.dayData(data, day, s.settings.estimate);
-      const line = (src, x) => `<div class="cr ${C[src]}${x?.est ? ' est' : ''}${day === today ? ' today' : ''}"><span>${src === top[0] ? NV.fmtShort(day) : ''}</span><span class="tag">${src === 'd' ? 'D' : 'F'}</span>
-        <span>${x ? (src === 'd' ? x.imsak : x.sabah) : '—'}</span><span>${x?.ogle || '—'}</span><span>${x?.ikindi || '—'}</span><span>${x?.aksam || '—'}</span><span>${x?.yatsi || '—'}</span></div>`;
+      const line = (src, x) => `<div class="cr ${C[src]}${x?.est ? ' est' : ''}${day === today ? ' today' : ''}"><span>${src === top[0] ? NV.fmtShort(day) : ''}</span><span class="tag">${src === 'd' ? 'D' : 'V'}</span>
+        <span>${x ? x.imsak : '—'}</span><span>${x?.ogle || '—'}</span><span>${x?.ikindi || '—'}</span><span>${x?.aksam || '—'}</span><span>${x?.yatsi || '—'}</span></div>`;
       const X = { d, f };
-      return `<div class="cg">${line(top[0], X[top[0]])}${line(top[1], X[top[1]])}</div>`;
+      const as = NV.asrSani(day, d?.ikindi, loc.coord?.lat);
+      const ext = (f?.sabah || as) ? `<div class="cx${day === today ? ' today' : ''}"><span></span>${f?.sabah ? `<span class="fz">V Sabah n. ${f.est ? '≈' : ''}${f.sabah}</span>` : '<span></span>'}${as ? `<span class="as">Asr-ı Sânî ${as}</span>` : ''}</div>` : '';
+      return `<div class="cg">${line(top[0], X[top[0]])}${line(top[1], X[top[1]])}${ext}</div>`;
     }).join('');
     $('#cal').innerHTML = head + body;
   }
@@ -167,7 +175,7 @@
       const data = NV.loadLoc(l.id);
       const nd = Object.keys(data.d || {}).length, nf = Object.keys(data.f || {}).length;
       return `<div class="li${l.id === s.active ? ' on' : ''}" data-id="${esc(l.id)}">
-        <button class="pick"><b>${esc(l.label)}</b><small>Diyanet: ${esc(l.diyanet?.name || '—')} · Fazilet: ${esc(l.fazilet?.name || '—')}<br>${nd} gün D · ${nf} gün F</small></button>
+        <button class="pick"><b>${esc(l.label)}</b><small>Diyanet: ${esc(l.diyanet?.name || '—')} · Verâ: ${esc(l.fazilet?.name || '—')}<br>${nd} gün D · ${nf} gün V</small></button>
         <button class="del" aria-label="Sil">✕</button></div>`;
     }).join('') : '<p class="muted">Henüz konum yok.</p>';
     $$('#appTopSeg button').forEach((b) => b.classList.toggle('on', b.dataset.v === s.settings.appTop));
@@ -177,7 +185,7 @@
     if (window.AndroidBridge) { $('#lockRow').hidden = false; try { $('#lockChk').checked = !!window.AndroidBridge.getLockscreen(); } catch (e) {} }
     const loc = NV.activeLoc(s);
     const fmt = (t) => (t ? new Date(t).toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' }) : 'hiç');
-    $('#dataInfo').textContent = loc ? `Son güncelleme — Diyanet: ${fmt(loc.updatedAt?.d)} · Fazilet: ${fmt(loc.updatedAt?.f)}` : '';
+    $('#dataInfo').textContent = loc ? `Son güncelleme — Diyanet: ${fmt(loc.updatedAt?.d)} · Verâ: ${fmt(loc.updatedAt?.f)}` : '';
   }
 
   // Android uygulamasına widget verisini gönder (yalnızca değiştiğinde)
@@ -309,7 +317,7 @@
       const center = ilceler.find((x) => NV.norm(x.name) === n);
       if (center) selIlce.value = center.id;
       const fzOpts = (city ? [{ name: city.name + ' (merkez)', path: city.path, base: city.name }] : []).concat(fzD.map((d) => ({ name: d.name, path: d.path, base: d.name })));
-      selFz.innerHTML = fzOpts.length ? fzOpts.map((o) => `<option value="${esc(o.path)}" data-n="${esc(NV.norm(o.base.split('/')[0]))}">${esc(o.name)}</option>`).join('') : '<option value="">Fazilet karşılığı bulunamadı</option>';
+      selFz.innerHTML = fzOpts.length ? fzOpts.map((o) => `<option value="${esc(o.path)}" data-n="${esc(NV.norm(o.base.split('/')[0]))}">${esc(o.name)}</option>`).join('') : '<option value="">Verâ karşılığı bulunamadı</option>';
       selIlce.disabled = false; selFz.disabled = !fzOpts.length;
       selIlce._il = ilName; selIlce._list = ilceler;
       matchFz();
@@ -340,7 +348,7 @@
     const s = NV.load();
     const loc = {
       id, label, short: NV.norm(ilceName) === NV.norm(il) ? il : ilceName,
-      diyanet: { id: ilce.id, name: ilceName, state: selIl.value },
+      il, diyanet: { id: ilce.id, name: ilceName, state: selIl.value },
       fazilet: selFz.value ? { path: selFz.value, name: selFz.selectedOptions[0]?.textContent || '' } : null,
     };
     btn.disabled = true; msg.textContent = 'Vakitler indiriliyor…';
@@ -356,7 +364,7 @@
     })]);
     s2.active = id; NV.save(s2);
     $('#addDlg').close();
-    toast(`${label} eklendi · ${Object.keys(data.d || {}).length} gün Diyanet, ${Object.keys(data.f || {}).length} gün Fazilet` + (r.errors.length ? ' (' + r.errors[0] + ')' : ''), 4000);
+    toast(`${label} eklendi · ${Object.keys(data.d || {}).length} gün Diyanet, ${Object.keys(data.f || {}).length} gün Verâ` + (r.errors.length ? ' (' + r.errors[0] + ')' : ''), 4000);
     show('home');
   }
 

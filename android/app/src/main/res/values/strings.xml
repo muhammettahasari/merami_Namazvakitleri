@@ -7,7 +7,7 @@
     <string name="wg_kompakt">Vakitler · Kompakt</string>
     <string name="wg_serit">Vakitler · Şerit</string>
     <string name="wg_liste">Vakitler · Liste</string>
-    <string name="wg_tablo_desc">5 vakit: Fazilet ve Diyanet alt alta, teheccüd satırı</string>
+    <string name="wg_tablo_desc">5 vakit: Verâ ve Diyanet alt alta, Asr-ı Sânî ve teheccüd</string>
     <string name="wg_kompakt_desc">Sıradaki vakit ve geri sayım</string>
     <string name="wg_serit_desc">Tek satır, her vakitte iki saat</string>
     <string name="wg_liste_desc">Dikey liste, tüm vakitler</string>
