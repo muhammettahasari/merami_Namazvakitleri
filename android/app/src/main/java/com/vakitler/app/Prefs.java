@@ -33,6 +33,10 @@ final class Prefs {
 
     static void setFlag(Context c, String k, boolean v) { sp(c).edit().putBoolean(k, v).apply(); }
 
+    static long num(Context c, String k) { return sp(c).getLong(k, 0); }
+
+    static void setNum(Context c, String k, long v) { sp(c).edit().putLong(k, v).apply(); }
+
     static boolean lock(Context c) {
         return sp(c).getBoolean("lock", false);
     }

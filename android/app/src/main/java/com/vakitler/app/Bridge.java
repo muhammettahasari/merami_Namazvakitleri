@@ -67,5 +67,11 @@ final class Bridge {
     public int widgetCount() { return PinActivity.count(a); }
 
     @JavascriptInterface
+    public String appVersion() { return UpdateChecker.currentName(a); }
+
+    @JavascriptInterface
+    public void checkUpdate() { a.runOnUiThread(() -> UpdateChecker.check(a, true)); }
+
+    @JavascriptInterface
     public void changeSite() { a.runOnUiThread(a::askUrl); }
 }

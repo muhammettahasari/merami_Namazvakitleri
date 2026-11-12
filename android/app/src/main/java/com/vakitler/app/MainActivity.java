@@ -150,6 +150,7 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         Updater.refresh(this);
+        UpdateChecker.check(this, false); // yeni sürüm varsa otomatik indirip kurar
     }
 
     @Override

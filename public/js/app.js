@@ -5,7 +5,7 @@
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
-  const APP_VER = '1.9';
+  const APP_VER = '1.10';
   let view = 'home';
   let syncing = false;
 
@@ -181,7 +181,9 @@
     $$('#appTopSeg button').forEach((b) => b.classList.toggle('on', b.dataset.v === s.settings.appTop));
     $$('#themeSeg button').forEach((b) => b.classList.toggle('on', b.dataset.v === s.settings.theme));
     $('#estChk').checked = !!s.settings.estimate;
-    $('#verInfo').textContent = `Web sürümü ${APP_VER} · ${window.AndroidBridge ? 'Android uygulaması ✓ (widget desteği var)' : 'tarayıcı / web uygulaması (widget için APK gerekir)'}`;
+    let apk = ''; try { apk = window.AndroidBridge?.appVersion?.() || ''; } catch (e) {}
+    $('#verInfo').textContent = `Web sürümü ${APP_VER} · ${window.AndroidBridge ? `Android uygulaması ${apk ? apk + ' ' : ''}✓ (widget desteği var, kendini otomatik günceller)` : 'tarayıcı / web uygulaması (widget için APK gerekir)'}`;
+    $('#updBtn').hidden = !window.AndroidBridge?.checkUpdate;
     if (window.AndroidBridge) { $('#lockRow').hidden = false; try { $('#lockChk').checked = !!window.AndroidBridge.getLockscreen(); } catch (e) {} }
     const loc = NV.activeLoc(s);
     const fmt = (t) => (t ? new Date(t).toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' }) : 'hiç');
@@ -378,6 +380,7 @@
     $('#themeBtn').onclick = toggleTheme;
     $('#wgBtn').onclick = () => show('wg');
     $('#setWg').onclick = () => show('wg');
+    $('#updBtn').onclick = () => { try { window.AndroidBridge.checkUpdate(); } catch (e) {} };
     initTips();
     $('#forceSync').onclick = () => syncAll(true);
     $('#addLoc').onclick = openAdd;
