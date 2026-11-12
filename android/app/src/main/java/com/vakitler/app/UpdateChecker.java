@@ -62,7 +62,11 @@ final class UpdateChecker {
                 con.setReadTimeout(15000);
                 String body;
                 try (InputStream in = con.getInputStream()) {
-                    body = new String(in.readAllBytes(), "UTF-8");
+                    // readAllBytes() Android 13 öncesinde yok: elle oku
+                    java.io.ByteArrayOutputStream bo = new java.io.ByteArrayOutputStream();
+                    byte[] b = new byte[16384]; int n;
+                    while ((n = in.read(b)) > 0) bo.write(b, 0, n);
+                    body = bo.toString("UTF-8");
                 }
                 JSONObject j = new JSONObject(body);
                 String tag = j.optString("tag_name", "");           // ör. v1.0.6
@@ -87,7 +91,7 @@ final class UpdateChecker {
                         Toast.makeText(a, "Uygulama güncel ✓ (" + currentName(a) + ")", Toast.LENGTH_LONG).show();
                     }
                 });
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 a.runOnUiThread(() -> {
                     busy = false;
                     if (manual) Toast.makeText(a, "Güncelleme denetlenemedi. İnternet bağlantısını kontrol edin.", Toast.LENGTH_LONG).show();
@@ -147,7 +151,7 @@ final class UpdateChecker {
                     s.commit(pend.getIntentSender());
                 }
                 a.runOnUiThread(() -> { if (prog.isShowing()) prog.dismiss(); });
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 a.runOnUiThread(() -> {
                     if (prog.isShowing()) prog.dismiss();
                     Toast.makeText(a, "Güncelleme indirilemedi: " + e.getMessage(), Toast.LENGTH_LONG).show();

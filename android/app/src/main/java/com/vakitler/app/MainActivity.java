@@ -149,8 +149,8 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        Updater.refresh(this);
-        UpdateChecker.check(this, false); // yeni sürüm varsa otomatik indirip kurar
+        try { Updater.refresh(this); } catch (Throwable ignored) {}
+        try { UpdateChecker.check(this, false); } catch (Throwable ignored) {} // yeni sürüm varsa otomatik indirip kurar
     }
 
     @Override
