@@ -147,7 +147,7 @@
     root.innerHTML = `
       <div class="seg zseg" id="zTabs"><button data-v="sayac">Sayaç</button><button data-v="listeler">Zikir listelerim</button><button data-v="ayar">Ayarlar</button></div>
       <div id="zPane"></div>`;
-    $('#zTabs').onclick = (e) => { const b = e.target.closest('button'); if (b) { Z.tab = b.dataset.v; save(); render(); } };
+    $('#zTabs').onclick = (e) => { const b = e.target.closest('button'); if (b) { Z.tab = b.dataset.v; save(); render(); g.NVNav?.sync(); } };
     // Sayma "click" ile yapılır: telefonlarda ses ve titreşim yalnızca gerçek dokunuş olaylarında çalışır
     root.addEventListener('click', (e) => { if (e.target.closest('#zBtn')) { e.preventDefault(); tap(); } });
     root.addEventListener('pointerdown', (e) => { if (e.target.closest('#zBtn')) $('#zBtn').classList.add('press'); });
@@ -313,8 +313,8 @@
     else if (a === 'tgt') { Z.free.target = +b.dataset.n; Z.free.count = 0; Z.free.rounds = 0; save(); render(); }
     else if (a === 'qt') { Z.set[b.dataset.k] = !Z.set[b.dataset.k]; save(); b.classList.toggle('on', Z.set[b.dataset.k]); }
     else if (a === 'start') startList(b.dataset.id);
-    else if (a === 'vird') { Z.tab = 'vird'; save(); render(); window.scrollTo(0, 0); }
-    else if (a === 'back') { Z.tab = 'listeler'; save(); render(); window.scrollTo(0, 0); }
+    else if (a === 'vird') { Z.tab = 'vird'; save(); render(); window.scrollTo(0, 0); g.NVNav?.sync(); }
+    else if (a === 'back') { Z.tab = 'listeler'; save(); render(); window.scrollTo(0, 0); g.NVNav?.sync(); }
     else if (a === 'fs') { Z.virdFont = Math.max(13, Math.min(26, (Z.virdFont || 17) + 2 * +b.dataset.d)); save(); $('.vr-wrap').style.setProperty('--vr-fs', Z.virdFont + 'px'); }
     else if (a === 'new') editList(null);
     else if (a === 'edit') editList(b.dataset.id);
@@ -371,6 +371,8 @@
   }
 
   g.NVZikir = {
+    canBack: () => Z.tab === 'vird',
+    back() { Z.tab = 'listeler'; save(); render(); window.scrollTo(0, 0); },
     show() { visible = true; Z = load(); render(); keepAwake(true); },
     hide() { visible = false; keepAwake(false); },
   };

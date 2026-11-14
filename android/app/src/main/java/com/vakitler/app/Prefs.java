@@ -37,6 +37,10 @@ final class Prefs {
 
     static void setNum(Context c, String k, long v) { sp(c).edit().putLong(k, v).apply(); }
 
+    static String lockStyle(Context c) { return sp(c).getString("lockStyle", "sade"); }
+
+    static void setLockStyle(Context c, String v) { sp(c).edit().putString("lockStyle", v).apply(); }
+
     static boolean lock(Context c) {
         return sp(c).getBoolean("lock", false);
     }

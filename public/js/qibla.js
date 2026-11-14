@@ -76,7 +76,13 @@
     beta: 0, gamma: 0, samples: [], lastEvent: 0, aligned: false, timer: null,
   };
   const S = () => NV.load();
-  const geo = () => S().settings.geo || null;
+  // Konum: GPS ile bulunan; yoksa kayıtlı ilçenin konumu
+  const geo = () => {
+    const gd = S().settings.geo;
+    if (gd) return gd;
+    const lc = NV.activeLoc()?.coord;
+    return lc ? { lat: lc.lat, lon: lc.lon, acc: null, alt: 0, ts: 0, src: 'ilce' } : null;
+  };
   const qset = () => Object.assign({ northRef: 'mag', offset: 0 }, S().settings.qibla || {});
   function saveQ(patch) { const s = NV.load(); s.settings.qibla = Object.assign(qset(), patch); NV.save(s); }
   function saveGeo(gd) { const s = NV.load(); s.settings.geo = gd; NV.save(s); }
@@ -138,7 +144,7 @@
     g.addEventListener('deviceorientationabsolute', onOrient);
     g.addEventListener('deviceorientation', onOrient);
     st.timer = setInterval(draw, 60);
-    setTimeout(() => { if (st.on && !st.lastEvent) msg('Bu cihazda pusula sensörü verisi alınamadı. Aşağıdaki güneş yöntemini kullanın.'); }, 3500);
+    setTimeout(() => { if (st.on && !st.lastEvent) msg('Bu cihazda pusula sensörü verisi alınamadı. “Yönergeler” bölümündeki <b>güneş yöntemini</b> kullanın.'); }, 3500);
     draw();
   }
   function stop() {
@@ -148,21 +154,40 @@
     clearInterval(st.timer);
   }
 
-  function msg(t) { const m = $('#qMsg'); if (m) { m.textContent = t; m.hidden = !t; } }
+  function msg(t) { const m = $('#qMsg'); if (m) { m.innerHTML = t; m.hidden = !t; } }
 
-  function locate() {
-    if (!navigator.geolocation) { msg('Bu tarayıcı konum desteklemiyor; koordinatları elle girin.'); return; }
-    msg('Konum alınıyor…');
-    navigator.geolocation.getCurrentPosition((p) => {
+  function getGPS() {
+    return new Promise((res) => {
+      if (!navigator.geolocation) return res(null);
+      navigator.geolocation.getCurrentPosition((p) => res(p), () => res(null), { enableHighAccuracy: true, timeout: 15000, maximumAge: 120000 });
+    });
+  }
+
+  // Tek düğme: önce konumu bulur, sonra pusulayı başlatır
+  let finding = false;
+  async function findQibla(onlyLocation = false) {
+    if (finding) return;
+    finding = true;
+    const startP = onlyLocation ? Promise.resolve() : start(); // iPhone: pusula izni dokunuş anında istenmeli
+    render();
+    msg('📍 Konumunuz bulunuyor… Açık havada ya da pencere kenarında daha hızlı bulunur.');
+    const p = await getGPS();
+    await startP;
+    if (p) {
       saveGeo({ lat: p.coords.latitude, lon: p.coords.longitude, acc: p.coords.accuracy, alt: p.coords.altitude || 0, ts: Date.now(), src: 'gps' });
-      msg(''); render();
-    }, (e) => {
-      msg(e.code === 1 ? 'Konum izni verilmedi. Tarayıcı ayarlarından izin verin veya koordinat girin.' : 'Konum alınamadı (' + e.message + '). Açık alanda tekrar deneyin veya koordinat girin.');
-    }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 60000 });
+      msg('');
+    } else if (NV.activeLoc()?.coord) {
+      msg('GPS konumu alınamadı; kayıtlı ilçenizin konumu kullanılıyor. Daha doğru sonuç için telefonun <b>Konum</b> ayarını açıp uygulamaya konum izni verin.');
+    } else {
+      msg('Konum alınamadı. Telefonun <b>Konum (GPS)</b> ayarını açın, uygulama izin isterse <b>İzin ver</b> deyin ve tekrar deneyin.');
+    }
+    finding = false;
+    render();
   }
 
   // ---------- çizim ----------
   const fmtDeg = (a, d = 1) => (a == null ? '—' : a.toFixed(d).replace('.', ',') + '°');
+  const fmtX = (x) => x.toFixed(1).replace('.', ',');
   const hm = (t) => (t ? NV.pad(t.getHours()) + ':' + NV.pad(t.getMinutes()) : '—');
 
   function dialSvg() {
@@ -185,96 +210,206 @@
     </svg>`;
   }
 
+  // ---------- çizimler (yönergeler) ----------
+  const SVG_FLAT = `<svg viewBox="0 0 320 150" class="qill" role="img" aria-label="Telefon masaya koyar gibi düz tutulur">
+    <g transform="translate(46 50)" class="nok"><rect x="-13" y="-24" width="26" height="48" rx="5" transform="rotate(-30)" class="phone"/></g>
+    <text x="46" y="96" class="lbl sm">✗ eğik</text>
+    <rect x="96" y="80" width="150" height="14" rx="5" class="phone"/><rect x="102" y="83" width="138" height="4" rx="2" class="screen"/>
+    <rect x="80" y="96" width="182" height="8" rx="3" class="ground"/>
+    <text x="171" y="70" class="lbl sm">✓ düz, ekran yukarı</text>
+    <g transform="translate(290 72)"><circle r="16" class="lvl"/><circle r="6" class="lvl-c"/><circle r="5" class="lvl-ok"/></g>
+    <text x="290" y="104" class="lbl sm">kabarcık</text><text x="290" y="117" class="lbl sm">ortada</text>
+    <text x="160" y="140" class="lbl">Telefonu masaya koyar gibi tutun</text>
+  </svg>`;
+  const SVG_EIGHT = `<svg viewBox="0 0 320 130" class="qill" role="img" aria-label="Telefonu havada sekiz çizer gibi döndürün">
+    <path d="M60 65 C 60 20, 150 20, 160 65 C 170 110, 260 110, 260 65 C 260 20, 170 20, 160 65 C 150 110, 60 110, 60 65 Z" class="eight"/>
+    <polygon points="206,28 222,22 214,38" class="arrow"/><polygon points="114,102 98,108 106,92" class="arrow"/>
+    <g transform="translate(160 65) rotate(-20)"><rect x="-12" y="-22" width="24" height="44" rx="5" class="phone"/><rect x="-9" y="-18" width="18" height="34" rx="2" class="screen"/></g>
+    <text x="160" y="126" class="lbl">Havada 2–3 kez yavaşça “8” çizin</text>
+  </svg>`;
+  const SVG_SHADOW = `<svg viewBox="0 0 340 334" class="qill" role="img" aria-label="Kalem dik sabitlenir, telefonun şarj girişi kalemin dibine, üst kenarı gölgenin ucuna gelir">
+    <text x="10" y="16" class="ttl">1) Yandan görünüm</text>
+    <circle cx="36" cy="44" r="14" class="sun"/>
+    <g class="ray"><line x1="50" y1="52" x2="124" y2="106"/><line x1="52" y1="40" x2="148" y2="106"/></g>
+    <rect x="10" y="118" width="320" height="6" rx="2" class="ground"/>
+    <rect x="124" y="58" width="8" height="60" rx="2" class="pen"/><polygon points="124,58 132,58 128,48" class="pen"/>
+    <text x="140" y="70" class="lbl sm start">kalem (dik)</text>
+    <polygon points="132,118 132,113 262,118" class="shade"/>
+    <line x1="132" y1="134" x2="262" y2="134" class="dim"/><line x1="132" y1="129" x2="132" y2="139" class="dim"/><line x1="262" y1="129" x2="262" y2="139" class="dim"/>
+    <text x="197" y="152" class="lbl sm">gölge boyu</text>
+    <text x="10" y="186" class="ttl">2) Üstten görünüm</text>
+    <polygon points="54,240 330,236 330,248 54,252" class="shade"/>
+    <circle cx="50" cy="246" r="8" class="pen"/>
+    <text x="50" y="274" class="lbl sm">kalem</text>
+    <g transform="translate(60 228)"><rect x="0" y="0" width="190" height="36" rx="8" class="phone"/><rect x="12" y="4" width="166" height="28" rx="3" class="screen"/>
+      <rect x="-1" y="14" width="6" height="8" rx="1.5" class="port"/></g>
+    <path d="M254 242 L292 242" class="arrowline"/><polygon points="292,236 304,242 292,248" class="arrow"/>
+    <text x="40" y="218" class="lbl sm start">↓ şarj girişi (alt kenar) kalemin dibinde</text>
+    <text x="330" y="282" class="lbl sm end">üst kenar gölgenin ucuna bakar →</text>
+    <text x="170" y="310" class="lbl">Telefon gölgenin üstünde, gölgeyle paralel</text>
+    <text x="170" y="326" class="lbl sm">gölge telefonun ortasından boydan boya geçer</text>
+  </svg>`;
+
+  // Güneşin 10°–65° arasında olduğu saatler (gölge, kalemin ~yarısı ile ~5,5 katı arası)
+  function sunWindows(lat, lon) {
+    const start = new Date(); start.setHours(0, 0, 0, 0);
+    const out = []; let cur = null;
+    for (let m = 0; m <= 1440; m += 3) {
+      const t = new Date(start.getTime() + m * 60000);
+      const a = sunPos(t, lat, lon).alt;
+      const ok = a >= 10 && a <= 65;
+      if (ok && !cur) cur = { from: t };
+      if (!ok && cur) { cur.to = t; out.push(cur); cur = null; }
+    }
+    return out;
+  }
+
   function render() {
     const root = $('#v-qibla'); if (!root) return;
-    const c = calc(), qs = qset();
+    const c = calc();
     if (!root.dataset.built) {
-      root.dataset.built = '1';
+      root.dataset.built = '2';
       root.innerHTML = `
-        <div class="qtop">
-          <div class="qwrap"><div class="qdial-box">${dialSvg()}</div>
-            <div class="qcenter"><b id="qTurn">—</b><small id="qSub"></small></div>
-            <div class="level" title="Eğim göstergesi: kabarcık ortada olmalı"><i id="qBubble"></i></div>
+        <div id="qMain">
+          <div class="qtop">
+            <div class="qwrap"><div class="qdial-box">${dialSvg()}</div>
+              <div class="qcenter"><b id="qTurn">—</b><small id="qSub"></small></div>
+              <div class="level" title="Eğim göstergesi: kabarcık ortada olmalı"><i id="qBubble"></i></div>
+            </div>
+            <div id="qWarn" class="qwarn" hidden></div>
+            <p id="qMsg" class="qmsg" hidden></p>
+            <button id="qGo" class="btn primary qgo">🧭 Kıbleyi bul</button>
+            <p class="qhint">Telefonu masaya koyar gibi <b>düz</b> tutun ve kendi etrafınızda yavaşça dönün. Kâbe simgesi üstteki sarı okun hizasına gelince telefon titrer ve halka yeşil olur.</p>
           </div>
-          <div id="qWarn" class="qwarn" hidden></div>
-          <p id="qMsg" class="qmsg" hidden></p>
-          <div class="qbtns"><button id="qStart" class="btn primary">Pusulayı başlat</button><button id="qLoc" class="btn">Konumumu bul</button></div>
+          <div class="qgrid" id="qInfo"></div>
+          <div class="qsun" id="qSunMini"></div>
+          <button id="qGuideBtn" class="guide-card"><span class="gc-ic">📘</span><span class="gc-tx"><b>Doğru sonuç için yönergeler ve ayarlar</b><small>Konum, telefonu tutma, pusula ayarı, güneş ve gölge ile kontrol</small></span><span class="gc-go">›</span></button>
         </div>
-        <div class="qgrid" id="qInfo"></div>
-        <h2 class="sec">Güneş ile doğrula <small>sensörsüz, en güvenilir yöntem</small></h2>
-        <div class="qsun" id="qSun"></div>
-        <details class="howto"><summary>Doğru sonuç için yönergeler</summary><ol class="tips">
-          <li><b>Telefonu yere paralel, düz tutun.</b> Eğim göstergesindeki kabarcık ortada (yeşil) olmalı.</li>
-          <li><b>Metal ve mıknatıstan uzak durun:</b> mıknatıslı kılıf/kapak, araba, demir masa, hoparlör, laptop, prizler. En az 50 cm.</li>
-          <li><b>Kalibrasyon:</b> “Sinyal oynak” veya “kalibrasyon” uyarısında telefonu havada birkaç kez <b>8</b> çizer gibi döndürün.</li>
-          <li><b>Konum izni verin.</b> Kıble açısı ve manyetik sapma konumunuza göre hesaplanır (Türkiye'de sapma yaklaşık +5° ile +7°).</li>
-          <li><b>Bina içinde</b> betondaki demirler pusulayı saptırabilir; pencere kenarında veya açık alanda kontrol edin.</li>
-          <li><b>Güneşle doğrulayın:</b> “Kıble saati”nde güneşe dönen kişi kıbleye dönmüş olur. Gölge yöntemiyle pusulayı da kalibre edebilirsiniz.</li>
-        </ol></details>
-        <h2 class="sec">Konum ve ayar</h2>
-        <div class="field"><span>Koordinat</span><span class="coord"><input id="qLat" inputmode="decimal" placeholder="Enlem"><input id="qLon" inputmode="decimal" placeholder="Boylam"><button id="qSet" class="btn sm">Kaydet</button></span></div>
-        <div class="field"><span>Pusula kuzeyi<small>Cihazınız gerçek kuzey veriyorsa “Gerçek” seçin. Emin değilseniz güneşle kalibre edin.</small></span>
-          <div class="seg" id="qRef"><button data-v="mag">Manyetik + sapma</button><button data-v="true">Gerçek</button></div></div>
-        <div class="field"><span>Kalibrasyon farkı<small id="qOffTxt"></small></span><button id="qOffReset" class="btn sm">Sıfırla</button></div>`;
-      $('#qStart').onclick = () => (st.on ? (stop(), render()) : start().then(render));
-      $('#qLoc').onclick = locate;
-      $('#qSet').onclick = () => {
-        const la = parseFloat($('#qLat').value.replace(',', '.')), lo = parseFloat($('#qLon').value.replace(',', '.'));
-        if (!(Math.abs(la) <= 90 && Math.abs(lo) <= 180)) { msg('Geçerli bir enlem/boylam girin (ör. 38,88 ve 37,67).'); return; }
-        saveGeo({ lat: la, lon: lo, acc: null, alt: 0, ts: Date.now(), src: 'manual' }); msg(''); render();
-      };
-      $('#qRef').onclick = (e) => { const b = e.target.closest('button'); if (b) { saveQ({ northRef: b.dataset.v }); render(); } };
-      $('#qOffReset').onclick = () => { saveQ({ offset: 0 }); render(); };
-      root.addEventListener('click', (e) => { if (e.target.id === 'qCal') calibrateSun(); });
+        <div id="qGuide" hidden></div>`;
+      root.addEventListener('click', (e) => {
+        const t = e.target.closest('button'); if (!t) return;
+        if (t.id === 'qGo') { if (st.on) { stop(); render(); } else findQibla(); }
+        else if (t.id === 'qGuideBtn') { page = 'guide'; render(); window.scrollTo(0, 0); g.NVNav?.sync(); }
+        else if (t.id === 'qBack') { page = 'main'; render(); window.scrollTo(0, 0); g.NVNav?.sync(); }
+        else if (t.id === 'qRelocate') findQibla(true);
+        else if (t.id === 'qCal') calibrateSun();
+        else if (t.id === 'qOffReset') { saveQ({ offset: 0 }); render(); }
+        else if (t.dataset.ref) { saveQ({ northRef: t.dataset.ref }); render(); }
+      });
     }
-    $('#qStart').textContent = st.on ? 'Pusulayı durdur' : 'Pusulayı başlat';
-    document.querySelectorAll('#qRef button').forEach((b) => b.classList.toggle('on', b.dataset.v === qs.northRef));
-    $('#qOffTxt').textContent = qs.offset ? `${qs.offset > 0 ? '+' : ''}${fmtDeg(qs.offset)} (güneşle ölçüldü)` : 'yok';
-    if (c && c.gd.src === 'manual' && !$('#qLat').value) { $('#qLat').value = c.gd.lat; $('#qLon').value = c.gd.lon; }
+    $('#qMain').hidden = page !== 'main';
+    $('#qGuide').hidden = page !== 'guide';
+    const go = $('#qGo');
+    go.textContent = finding ? '📍 Konum bulunuyor…' : (st.on ? '⏹ Pusulayı durdur' : '🧭 Kıbleyi bul');
+    go.disabled = finding;
+    go.classList.toggle('primary', !st.on);
 
+    const src = !c ? '' : c.gd.src === 'gps' ? `GPS ile bulundu (±${Math.round(c.gd.acc || 0)} m)` : 'kayıtlı ilçenizin konumu';
     $('#qInfo').innerHTML = c ? `
-      <div><small>Kıble açısı</small><b>${fmtDeg(c.q)}</b><i>gerçek kuzeyden</i></div>
-      <div><small>Manyetik sapma</small><b>${c.decl > 0 ? '+' : ''}${fmtDeg(c.decl)}</b><i>WMM-2025</i></div>
-      <div><small>Kâbe'ye uzaklık</small><b>${Math.round(c.dist).toLocaleString('tr-TR')} km</b><i>${c.gd.src === 'gps' ? 'GPS ±' + Math.round(c.gd.acc || 0) + ' m' : 'elle girildi'}</i></div>
-      <div><small>Manyetik pusulada</small><b>${fmtDeg(norm360(c.q - c.decl))}</b><i>klasik pusula için</i></div>`
-      : `<div class="wide"><b>Konum gerekli</b><i>“Konumumu bul”a basın veya koordinat girin.</i></div>`;
-    renderSun(c);
+      <div><small>Kıble açısı</small><b>${fmtDeg(c.q)}</b><i>kuzeyden saat yönünde</i></div>
+      <div><small>Kâbe'ye uzaklık</small><b>${Math.round(c.dist).toLocaleString('tr-TR')} km</b><i>${src}</i></div>`
+      : `<div class="wide"><b>Konum gerekli</b><i>“Kıbleyi bul”a basın; konumunuz otomatik bulunur.</i></div>`;
+    if (c) {
+      const face = sunAtAzimuth(c.gd.lat, c.gd.lon, c.q);
+      $('#qSunMini').innerHTML = `<div class="qs-row"><span>☀️ Kıble saati: bu saatte <b>güneşe dönen kıbleye dönmüş olur</b></span><b>${face ? hm(face.time) : 'bugün yok'}</b></div>`;
+    } else $('#qSunMini').innerHTML = '';
+    if (page === 'guide') renderGuide(c);
     draw();
   }
 
-  function renderSun(c) {
-    const el = $('#qSun'); if (!el) return;
-    if (!c) { el.innerHTML = '<p class="muted">Konum girildiğinde güneş yöntemi hesaplanır.</p>'; return; }
-    const now = new Date(), s = sunPos(now, c.gd.lat, c.gd.lon);
-    const face = sunAtAzimuth(c.gd.lat, c.gd.lon, c.q);
-    const shadow = sunAtAzimuth(c.gd.lat, c.gd.lon, norm360(c.q + 180));
-    const rel = diff180(c.q - s.az);
-    const up = s.alt > 3;
-    el.innerHTML = `
-      <div class="qs-row"><span>☀️ Kıble saati (güneşe dönün)</span><b>${face ? hm(face.time) : 'bugün yok'}</b></div>
-      <div class="qs-row"><span>Gölge kıbleyi gösterir</span><b>${shadow ? hm(shadow.time) : 'bugün yok'}</b></div>
-      <div class="qs-row"><span>Güneş şu an</span><b>${up ? `${fmtDeg(s.az, 0)} · yükseklik ${fmtDeg(s.alt, 0)}` : 'ufkun altında'}</b></div>
-      ${up ? `<div class="qs-hint">Kıble, güneşin <b>${Math.abs(rel).toFixed(0)}° ${rel > 0 ? 'sağında' : 'solunda'}</b>.</div>` : ''}
-      <div class="qs-cal">
-        <p><b>Gölge ile pusula kalibrasyonu</b> (güneşli havada, güneş 10°–65° yüksekteyken): Telefonu düz bir zemine koyun. Yanına dik tuttuğunuz bir kalemin gölgesine telefonun uzun kenarını hizalayın; <b>telefonun üst kenarı gölgenin ucunu</b> göstersin. Pusula açıkken “Ölç”e basın.</p>
-        <button id="qCal" class="btn sm" ${up && s.alt >= 10 && s.alt <= 65 ? '' : 'disabled'}>Ölç ve kalibre et</button>
-      </div>`;
+  function renderGuide(c) {
+    const qs = qset(), now = new Date();
+    let sunBlock = '<p class="muted">Konum bulununca hesaplanır.</p>', shadowBlock = sunBlock, calOk = false;
+    if (c) {
+      const s = sunPos(now, c.gd.lat, c.gd.lon);
+      const face = sunAtAzimuth(c.gd.lat, c.gd.lon, c.q);
+      const shadow = sunAtAzimuth(c.gd.lat, c.gd.lon, norm360(c.q + 180));
+      const rel = diff180(c.q - s.az);
+      sunBlock = `
+        <div class="qs-row"><span>Kıble saati (güneşe dönün)</span><b>${face ? hm(face.time) : 'bugün yok'}</b></div>
+        <div class="qs-row"><span>Gölgenin kıbleyi gösterdiği saat</span><b>${shadow ? hm(shadow.time) : 'bugün yok'}</b></div>
+        ${s.alt > 3 ? `<p class="qs-hint">Şu an kıble, güneşin <b>${Math.abs(rel).toFixed(0)}° ${rel > 0 ? 'sağında' : 'solunda'}</b> kalıyor.</p>` : '<p class="qs-hint">Güneş şu an batmış durumda.</p>'}`;
+      const wins = sunWindows(c.gd.lat, c.gd.lon);
+      const winTxt = wins.length ? wins.map((w) => `${hm(w.from)} – ${hm(w.to)}`).join(' ve ') : 'bugün uygun saat yok';
+      let live;
+      if (s.alt <= 0.5) live = '<span class="bad">Güneş batmış; gölge yok.</span>';
+      else {
+        const ratio = 1 / Math.tan(s.alt * rad);
+        calOk = s.alt >= 10 && s.alt <= 65;
+        live = calOk ? `<span class="good">Şu an gölge, kalemin boyunun <b>${fmtX(ratio)} katı</b>: ölçüm için uygun ✓</span>`
+          : s.alt < 10 ? `<span class="bad">Şu an gölge kalemin <b>${fmtX(ratio)} katı</b>, fazla uzun (güneş çok alçakta). Ölçüm yanıltabilir.</span>`
+          : `<span class="bad">Şu an gölge kalemin <b>${fmtX(ratio)} katı</b>, fazla kısa (güneş tepede). Biraz bekleyin.</span>`;
+      }
+      shadowBlock = `
+        <div class="qwhen"><b>Ne zaman ölçülür?</b>
+          <p>Güneşli ve gölgenin net göründüğü bir saatte. <b>Gölge, kalemin boyunun yarısından uzun, 5,5 katından kısa olmalı.</b> Gölge çok uzunsa (sabah erken / akşamüstü) veya çok kısaysa (yazın öğle saatleri) yön yanıltabilir.</p>
+          <p>Bugün uygun saatler: <b>${winTxt}</b></p>
+          <p class="live">${live}</p></div>`;
+    }
+    $('#qGuide').innerHTML = `
+      <div class="vr-bar"><button class="btn sm" id="qBack">‹ Kıble</button><b class="qg-title">Yönergeler ve ayarlar</b><span></span></div>
+
+      <section class="qg"><h3><span class="qn">1</span>Konum</h3>
+        <p>“Kıbleyi bul”a bastığınızda telefon konumunuzu <b>kendisi bulur</b>; bir şey yazmanıza gerek yok. Konum izni sorulursa <b>İzin ver</b> deyin. Açık havada veya pencere kenarında daha hızlı ve doğru bulur.</p>
+        <p class="qstat">${c ? (c.gd.src === 'gps' ? `✓ Konum GPS ile bulundu (±${Math.round(c.gd.acc || 0)} m)${c.gd.ts ? ', ' + hm(new Date(c.gd.ts)) : ''}` : '⚠️ GPS konumu yok; kayıtlı ilçenizin konumu kullanılıyor.') : '⚠️ Henüz konum bulunmadı.'}</p>
+        <button class="btn" id="qRelocate">📍 Konumu yeniden bul</button></section>
+
+      <section class="qg"><h3><span class="qn">2</span>Telefonu düz tutun</h3>${SVG_FLAT}
+        <p>Telefonu <b>masaya koyar gibi</b> yere paralel, ekranı yukarı bakacak şekilde tutun. Dairenin sağ altındaki kabarcık <b>yeşil ve ortada</b> olmalı. Eğik tutulan telefonda pusula şaşar.</p></section>
+
+      <section class="qg"><h3><span class="qn">3</span>Metal ve mıknatıstan uzak durun</h3>
+        <ul><li><b>Mıknatıslı kılıf veya kapak</b> varsa çıkarın.</li><li>Araba içi, demir masa, buzdolabı, hoparlör, bilgisayar ve prizlerden en az <b>yarım metre</b> uzak durun.</li><li>Bina içinde betondaki demirler pusulayı saptırabilir; şüphelenirseniz pencere kenarında veya dışarıda deneyin.</li></ul></section>
+
+      <section class="qg"><h3><span class="qn">4</span>Pusulayı ayarlayın (8 çizin)</h3>${SVG_EIGHT}
+        <p>Ekranda “sinyal oynak” veya “hassasiyet düşük” uyarısı çıkarsa telefonu elinizde tutup havada <b>2–3 kez yavaşça 8 çizin</b>. Bu, telefonun pusulasını kendiliğinden ayarlar.</p></section>
+
+      <section class="qg"><h3><span class="qn">5</span>Güneşle kontrol edin (en kolay yöntem)</h3>
+        <p>Pusulaya hiç ihtiyaç duymadan: <b>kıble saatinde güneşe dönerseniz kıbleye dönmüş olursunuz.</b> Gölgenin kıbleyi gösterdiği saatte ise gölgenin uzandığı yön kıbledir.</p>
+        <div class="qsun">${sunBlock}</div></section>
+
+      <section class="qg"><h3><span class="qn">6</span>Gölge ile pusulayı düzeltin</h3>
+        <p>Telefonun pusulası birkaç derece şaşıyorsa güneşin gölgesiyle bir kez düzeltebilirsiniz. Uygulama bu farkı kaydeder ve bundan sonra hep düzeltilmiş yönü gösterir.</p>
+        ${shadowBlock}
+        ${SVG_SHADOW}
+        <ol class="qsteps">
+          <li>Güneş alan <b>düz bir zemine</b> (masa, yer) bir kalemi <b>dik</b> olarak sabitleyin: hamur, bant veya bir kitap arasına sıkıştırarak.</li>
+          <li>Telefonu ekranı yukarı bakacak şekilde zemine <b>yatırın</b>. Telefonun <b>şarj girişi olan alt kenarını kalemin dibine</b> dayayın.</li>
+          <li>Telefonun <b>üst kenarı gölgenin ucuna baksın</b>; telefon gölgeyle <b>paralel</b> dursun, gölge telefonun tam ortasından boydan boya geçsin.</li>
+          <li>Telefona dokunmadan, aşağıdaki <b>“Ölç ve kaydet”</b> düğmesine basın. Birkaç saniye bekleyin.</li>
+        </ol>
+        <button class="btn primary" id="qCal" ${calOk ? '' : 'disabled'}>📏 Ölç ve kaydet</button>
+        <p class="qstat">Kayıtlı düzeltme: <b>${qs.offset ? (qs.offset > 0 ? '+' : '') + fmtDeg(qs.offset) : 'yok'}</b> ${qs.offset ? '<button class="btn sm" id="qOffReset">Sıfırla</button>' : ''}</p></section>
+
+      <section class="qg"><h3><span class="qn">7</span>İleri ayar</h3>
+        <p><b>Pusula türü:</b> Telefonların çoğu manyetik kuzeyi gösterir; uygulama aradaki farkı (Türkiye'de yaklaşık 5–7°) kendisi ekler. Telefonunuz zaten gerçek kuzeyi gösteriyorsa ikinciyi seçin. Emin değilseniz <b>önerileni</b> bırakın; 6. adımdaki gölge ölçümü farkı zaten düzeltir.</p>
+        <div class="seg"><button data-ref="mag" class="${qs.northRef === 'mag' ? 'on' : ''}">Önerilen</button><button data-ref="true" class="${qs.northRef === 'true' ? 'on' : ''}">Telefon gerçek kuzey veriyor</button></div>
+        ${c ? `<p class="muted small">Bu konumda manyetik fark: ${c.decl > 0 ? '+' : ''}${fmtDeg(c.decl)} · Klasik pusulada kıble: ${fmtDeg(norm360(c.q - c.decl))}</p>` : ''}</section>`;
   }
 
-  function calibrateSun() {
-    const c = calc(); if (!c) return;
-    if (!st.on || st.raw == null) { msg('Önce pusulayı başlatın.'); return; }
+  async function calibrateSun() {
+    const c = calc(); if (!c) { msg('Önce konum bulunmalı.'); return; }
+    const btn = $('#qCal');
+    if (!st.on) await start();
+    btn.disabled = true; btn.textContent = '⏳ Ölçülüyor… telefona dokunmayın';
+    st.samples = [];
+    await new Promise((r) => setTimeout(r, 2500));
+    if (st.raw == null || st.heading == null) { btn.textContent = '📏 Ölç ve kaydet'; btn.disabled = false; alert('Pusula verisi alınamadı. Telefonun yön sensörü izni kapalı olabilir.'); return; }
     const s = sunPos(new Date(), c.gd.lat, c.gd.lon);
     const shadowAz = norm360(s.az + 180);
     const qs = qset();
-    let base = st.heading; if (qs.northRef === 'mag') base += c.decl; // ofsetsiz yön
+    let base = st.heading; if (qs.northRef === 'mag') base += c.decl; // düzeltmesiz yön
     const off = diff180(shadowAz - base);
-    if (Math.abs(off) > 25) { msg(`Ölçülen fark çok büyük (${off.toFixed(1)}°). Hizalamayı ve metal yakınlığını kontrol edip tekrar deneyin.`); return; }
+    if (Math.abs(off) > 25) {
+      btn.textContent = '📏 Ölç ve kaydet'; btn.disabled = false;
+      alert(`Ölçülen fark çok büyük (${off.toFixed(1).replace('.', ',')}°).\n\nTelefonun üst kenarının gölgenin ucuna baktığını, şarj girişinin kalem tarafında olduğunu ve yakında metal olmadığını kontrol edip tekrar deneyin.`);
+      return;
+    }
     saveQ({ offset: Math.round(off * 10) / 10 });
-    msg(`Kalibrasyon kaydedildi: ${off > 0 ? '+' : ''}${off.toFixed(1)}°`);
+    g.NVFX?.vibrate([60]);
     render();
   }
 
+  let page = 'main';
   let lastAlignVib = 0;
   function draw() {
     const c = calc(); const rose = $('#qRose'); if (!rose) return;
@@ -291,7 +426,7 @@
       rose.style.transform = 'rotate(0deg)';
       box.classList.remove('aligned');
       turn.textContent = c ? fmtDeg(c.q) : '—';
-      sub.textContent = c ? (st.on ? 'sensör bekleniyor…' : 'kıble açısı · pusulayı başlatın') : 'konum gerekli';
+      sub.textContent = c ? (st.on ? 'sensör bekleniyor…' : 'kıble açısı · “Kıbleyi bul”a basın') : '“Kıbleyi bul”a basın';
       warn.hidden = true;
       return;
     }
@@ -316,7 +451,9 @@
   }
 
   g.NVQibla = {
-    render, show() { render(); }, hide() { stop(); },
+    render, show() { render(); }, hide() { stop(); page = 'main'; },
+    canBack: () => page !== 'main',
+    back() { page = 'main'; render(); window.scrollTo(0, 0); },
     _t: { qiblaBearing, distanceKm, sunPos, sunAtAzimuth },
   };
 })(window);

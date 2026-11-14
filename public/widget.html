@@ -64,7 +64,7 @@
         const up = loc?.updatedAt?.f || loc?.updatedAt?.d;
         document.getElementById('stat').textContent = (navigator.onLine ? '' : 'Çevrimdışı · ') +
           (up ? 'Güncelleme: ' + new Date(up).toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' }) : '');
-        const NATIVE = ['tablo', 'kompakt', 'serit', 'liste'];
+        const NATIVE = Object.keys(STYLES);
         const barEl = document.getElementById('bar');
         if (barEl.dataset.s === style) return; // menü yalnızca bir kez çizilir (dokunuşlar kaybolmasın)
         barEl.dataset.s = style;

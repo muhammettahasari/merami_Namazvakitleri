@@ -41,6 +41,10 @@ final class Updater {
         boolean exact = Build.VERSION.SDK_INT < 31 || am.canScheduleExactAlarms();
         if (exact) am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, next, pi);
         else am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, next, pi);
+        // Halka ilerlemesi ve Cam rengi için 15 dakikada bir hafif yenileme (telefonu uyandırmaz)
+        Intent i2 = new Intent(c, TickReceiver.class).setAction("com.vakitler.app.SOFT");
+        PendingIntent pi2 = PendingIntent.getBroadcast(c, 2, i2, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        am.set(AlarmManager.RTC, now + 15 * 60 * 1000L, pi2);
     }
 
     // ---------------- kilit ekranı bildirimi ----------------
@@ -91,7 +95,50 @@ final class Updater {
         if (nx != null) {
             b.setWhen(nx.at).setUsesChronometer(true).setChronometerCountDown(true);
         }
+        String style = Prefs.lockStyle(c);
+        try {
+            android.widget.RemoteViews rv = null;
+            if ("tablo".equals(style)) rv = notifTablo(c, m);
+            else if ("sayac".equals(style) && nx != null) rv = notifSayac(c, nx.name() + " vaktine", nx.at,
+                    (aF ? "V " : "D ") + nx.hm, other == null ? "" : (aF ? "D " : "V ") + other.hm);
+            else if ("oruc".equals(style) && m.orucAt > 0) rv = notifSayac(c, (m.orucIftar ? "🌇 " : "🌙 ") + m.orucLabel, m.orucAt,
+                    "İmsak V " + m.imsakF + " · D " + m.imsakD, "İftar V " + m.aksamF + " · D " + m.aksamD);
+            if (rv != null) {
+                b.setStyle(new Notification.DecoratedCustomViewStyle()).setCustomContentView(rv).setCustomBigContentView(rv);
+                if ("tablo".equals(style)) b.setContentTitle(title);
+            }
+        } catch (Throwable ignored) {}
         nm.notify(NOTIF_ID, b.build());
+    }
+
+    private static android.widget.RemoteViews notifTablo(Context c, Model m) {
+        android.widget.RemoteViews v = new android.widget.RemoteViews(c.getPackageName(), R.layout.notif_tablo);
+        boolean aF = m.fazTop;
+        String[][] rows = {aF ? m.f : m.d, aF ? m.d : m.f};
+        String[] pre = {"na", "nb"};
+        for (int r = 0; r < 2; r++) {
+            boolean isF = (r == 0) == aF;
+            int src = c.getResources().getIdentifier(pre[r] + "_s", "id", c.getPackageName());
+            v.setTextViewText(src, isF ? "V" : "D");
+            v.setInt(src, "setBackgroundResource", isF ? R.drawable.badge_fz : R.drawable.badge_dy);
+            for (int i = 0; i < 5; i++) {
+                int id = c.getResources().getIdentifier(pre[r] + i, "id", c.getPackageName());
+                v.setTextViewText(id, rows[r][i]);
+                v.setTextColor(id, isF ? WidgetRender.FZ : WidgetRender.DY);
+            }
+        }
+        return v;
+    }
+
+    private static android.widget.RemoteViews notifSayac(Context c, String label, long at, String a, String b) {
+        android.widget.RemoteViews v = new android.widget.RemoteViews(c.getPackageName(), R.layout.notif_sayac);
+        v.setTextViewText(R.id.ns_lbl, label);
+        long base = android.os.SystemClock.elapsedRealtime() + (at - System.currentTimeMillis());
+        v.setChronometer(R.id.ns_ch, base, null, true);
+        v.setChronometerCountDown(R.id.ns_ch, true);
+        v.setTextViewText(R.id.ns_a, a);
+        v.setTextViewText(R.id.ns_b, b);
+        return v;
     }
 
     private static String join(String[] t) {

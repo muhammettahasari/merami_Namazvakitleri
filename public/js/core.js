@@ -255,6 +255,7 @@
       if (T.d) o.d = { imsak: T.d.imsak, gunes: T.d.gunes, ogle: T.d.ogle, ikindi: T.d.ikindi, aksam: T.d.aksam, yatsi: T.d.yatsi };
       if (T.f) { o.f = { imsak: T.f.imsak, sabah: T.f.sabah, gunes: T.f.gunes, ogle: T.f.ogle, ikindi: T.f.ikindi, aksam: T.f.aksam, yatsi: T.f.yatsi }; o.fe = !!T.f.est; }
       const as = asrSani(day, T.d?.ikindi, loc.coord?.lat); if (as) o.as = as;
+      const hc = T.d?.hicri || T.f?.hicri; if (hc) o.h = hc;
       if (T.d && N.d) o.td = teheccud(day, T.d.aksam, next, N.d.imsak)?.text || '';
       if (T.f && N.f) o.tf = teheccud(day, T.f.aksam, next, N.f.imsak)?.text || '';
       days[day] = o;

@@ -70,5 +70,29 @@
             <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_liste_info" />
         </receiver>
+        <receiver android:name=".GeceWidget" android:exported="true" android:label="@string/wg_gece">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_gece_info" />
+        </receiver>
+        <receiver android:name=".CamWidget" android:exported="true" android:label="@string/wg_cam">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_cam_info" />
+        </receiver>
+        <receiver android:name=".HalkaWidget" android:exported="true" android:label="@string/wg_halka">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_halka_info" />
+        </receiver>
+        <receiver android:name=".MiniWidget" android:exported="true" android:label="@string/wg_mini">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_mini_info" />
+        </receiver>
+        <receiver android:name=".OrucWidget" android:exported="true" android:label="@string/wg_oruc">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_oruc_info" />
+        </receiver>
+        <receiver android:name=".TarihWidget" android:exported="true" android:label="@string/wg_tarih">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_tarih_info" />
+        </receiver>
     </application>
 </manifest>

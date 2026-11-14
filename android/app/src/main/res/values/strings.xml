@@ -13,4 +13,16 @@
     <string name="wg_liste_desc">Dikey liste, tüm vakitler</string>
     <string name="sc_widget">Widget ekle</string>
     <string name="sc_widget_long">Ana ekrana widget ekle</string>
+    <string name="wg_gece">Vakitler · Gece</string>
+    <string name="wg_cam">Vakitler · Cam</string>
+    <string name="wg_halka">Vakitler · Halka</string>
+    <string name="wg_mini">Vakitler · Mini</string>
+    <string name="wg_oruc">Vakitler · Oruç</string>
+    <string name="wg_tarih">Vakitler · Tarih</string>
+    <string name="wg_gece_desc">Siyah zemin, pil dostu tablo</string>
+    <string name="wg_cam_desc">Günün saatine göre gökyüzü renginde tablo</string>
+    <string name="wg_halka_desc">Sıradaki vakte kalan süre halkası</string>
+    <string name="wg_mini_desc">Küçük: sıradaki vakit ve geri sayım</string>
+    <string name="wg_oruc_desc">Sahur ve iftar sayacı</string>
+    <string name="wg_tarih_desc">Hicri ve miladi tarih, sıradaki vakit</string>
 </resources>

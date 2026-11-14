@@ -150,13 +150,52 @@
   }
 
   // ---------- WIDGET ----------
-  const NATIVE_WG = ['tablo', 'kompakt', 'serit', 'liste'];
+  const NATIVE_WG = ['tablo', 'kompakt', 'serit', 'liste', 'halka', 'gece', 'cam', 'mini', 'oruc', 'tarih'];
+  // ---------- kilit ekranı tasarımları ----------
+  const LOCK = {
+    sade: { name: 'Sade', desc: 'Sıradaki vakit ve teheccüd, yazı olarak' },
+    tablo: { name: 'Tablo', desc: 'Günün 5 vakti, Verâ ve Diyanet alt alta' },
+    sayac: { name: 'Sayaç', desc: 'Sıradaki vakte büyük geri sayım' },
+    oruc: { name: 'Oruç', desc: 'Sahura / iftara kalan süre' },
+  };
+  function lockPreview(k, m, top, now) {
+    const [a, b] = top === 'diyanet' ? ['d', 'f'] : ['f', 'd'];
+    const N = { d: 'D', f: 'V' }, C = { d: 'dy', f: 'fz' };
+    const e = m.next[a] || m.next[b], eb = m.next[b];
+    const nm = (x) => (!x ? '—' : x.raw === 'sabah' ? 'Sabah n.' : NV.LABEL[x.raw]);
+    const head = `<div class="lp-h"><span class="lp-ic">❀</span>Vakitler · ${esc(m.loc?.short || '')}<em>${e ? NV.countdown(e.time, now).replace(/:\d\d$/, '') : ''}</em></div>`;
+    let body = '';
+    if (k === 'sade') body = `<b>Sıradaki: ${nm(e)} ${N[a]} ${e?.hm || '—'} · ${N[b]} ${eb?.hm || '—'}</b><span>Teheccüd V ${m.teh.f?.text || '—'} · D ${m.teh.d?.text || '—'}</span>`;
+    if (k === 'tablo') {
+      const cols = [['imsak', 'İms'], ['ogle', 'Öğl'], ['ikindi', 'İkn'], ['aksam', 'Akş'], ['yatsi', 'Yts']];
+      body = `<div class="lp-t"><span></span>${cols.map((c) => `<i>${c[1]}</i>`).join('')}${[a, b].map((x) => `<span class="${C[x]}">${N[x]}</span>${cols.map((c) => `<em class="${C[x]}">${m[x]?.[c[0]] || '—'}</em>`).join('')}`).join('')}</div>`;
+    }
+    if (k === 'sayac') body = `<div class="lp-s"><span>${nm(e)} vaktine</span><b>${e ? NV.countdown(e.time, now) : '—'}</b><small>${N[a]} ${e?.hm || '—'} · ${N[b]} ${eb?.hm || '—'}</small></div>`;
+    if (k === 'oruc') {
+      const o = window.NVW.orucInfo(m, top, now);
+      body = `<div class="lp-s"><span>${o?.mode === 'iftar' ? '🌇' : '🌙'} ${o?.label || ''}</span><b>${o?.target ? NV.countdown(o.target, now) : '—'}</b><small>İmsak V ${m.f?.imsak || '—'} · D ${m.d?.imsak || '—'} — İftar V ${m.f?.aksam || '—'} · D ${m.d?.aksam || '—'}</small></div>`;
+    }
+    return `<div class="lp">${head}<div class="lp-b">${body}</div></div>`;
+  }
+  function renderLock(m, s) {
+    const nat = !!window.AndroidBridge?.setLockStyle;
+    let on = false, cur = 'sade';
+    try { on = !!window.AndroidBridge?.getLockscreen(); cur = window.AndroidBridge?.getLockStyle?.() || 'sade'; } catch (e) {}
+    $('#lockChk').checked = on; $('#lockChk').disabled = !window.AndroidBridge;
+    $('#lockNote').innerHTML = window.AndroidBridge ? (nat ? 'Bir tasarım seçin; açıkken kilit ekranında ve bildirim panelinde sürekli görünür.' : 'Tasarım seçimi için uygulamayı güncelleyin (otomatik güncelleme birkaç dakika içinde gelir).')
+      : 'Kilit ekranı yalnızca <b>Vakitler Android uygulamasında (APK)</b> çalışır. Aşağıda tasarımların önizlemesi var.';
+    const now = new Date(), top = s.settings.widgetTop;
+    $('#lockGrid').innerHTML = Object.entries(LOCK).map(([k, v]) => `
+      <button class="lockopt${k === cur ? ' sel' : ''}" data-lock="${k}">${lockPreview(k, m, top, now)}<span class="lo-n"><b>${k === cur ? '✓ ' : ''}${v.name}</b><small>${v.desc}</small></span></button>`).join('');
+  }
+
   function renderGallery() {
     const s = NV.load(); const loc = NV.activeLoc(s);
     $$('#wgTopSeg button').forEach((b) => b.classList.toggle('on', b.dataset.v === s.settings.widgetTop));
-    if (!loc) { $('#gallery').innerHTML = '<p class="muted">Önce konum ekleyin.</p>'; return; }
+    if (!loc) { $('#gallery').innerHTML = '<p class="muted">Önce konum ekleyin.</p>'; $('#lockCard').hidden = true; return; }
     const now = new Date();
     const m = NV.model(loc, now);
+    $('#lockCard').hidden = false; renderLock(m, s);
     $('#gallery').innerHTML = Object.entries(STYLES).map(([k, st]) => `
       <figure class="wg-item${s.settings.widgetStyle === k ? ' sel' : ''}" data-k="${k}">
         <div class="wg-wrap size-${st.size.replace('×', 'x')}">${st.render(m, s.settings.widgetTop, now)}</div>
@@ -184,7 +223,6 @@
     let apk = ''; try { apk = window.AndroidBridge?.appVersion?.() || ''; } catch (e) {}
     $('#verInfo').textContent = `Web sürümü ${APP_VER} · ${window.AndroidBridge ? `Android uygulaması ${apk ? apk + ' ' : ''}✓ (widget desteği var, kendini otomatik günceller)` : 'tarayıcı / web uygulaması (widget için APK gerekir)'}`;
     $('#updBtn').hidden = !window.AndroidBridge?.checkUpdate;
-    if (window.AndroidBridge) { $('#lockRow').hidden = false; try { $('#lockChk').checked = !!window.AndroidBridge.getLockscreen(); } catch (e) {} }
     const loc = NV.activeLoc(s);
     const fmt = (t) => (t ? new Date(t).toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' }) : 'hiç');
     $('#dataInfo').textContent = loc ? `Son güncelleme — Diyanet: ${fmt(loc.updatedAt?.d)} · Verâ: ${fmt(loc.updatedAt?.f)}` : '';
@@ -221,7 +259,38 @@
     menu(false);
     document.body.dataset.view = v;
     render(); MODS[v]?.()?.show(); window.scrollTo(0, 0);
+    window.NVNav?.sync();
   }
+
+  // ---------- geri tuşu: bir üst seviyeye dön ----------
+  // Telefonun geri tuşu tarayıcı geçmişini kullanır. Üst seviyeye dönülebilecek bir durumdaysak
+  // geçmişe bir "bekçi" kaydı eklenir; geri basılınca uygulama kapanmaz, bir üst seviyeye döner.
+  // Ana ekranda (Vakitler) bekçi yoktur, geri tuşu uygulamadan çıkar.
+  let guard = false, ignorePop = false;
+  function goUp(dry) {
+    const dlg = [...document.querySelectorAll('dialog')].find((d) => d.open);
+    if (dlg) { if (!dry) dlg.close(); return true; }
+    if ($('#fabnav')?.classList.contains('open')) { if (!dry) menu(false); return true; }
+    const mod = MODS[view]?.();
+    if (mod?.canBack?.()) { if (!dry) mod.back(); return true; }
+    if (view !== 'home') { if (!dry) show('home'); return true; }
+    return false;
+  }
+  function syncGuard() {
+    const up = goUp(true);
+    if (up && !guard) { history.pushState({ nv: 'g' }, ''); guard = true; }
+    else if (!up && guard) { guard = false; ignorePop = true; history.back(); }
+  }
+  window.addEventListener('popstate', () => {
+    if (ignorePop) { ignorePop = false; return; }
+    guard = false;
+    goUp(false);
+    setTimeout(syncGuard, 0);
+  });
+  const _showModal = HTMLDialogElement.prototype.showModal;
+  HTMLDialogElement.prototype.showModal = function () { _showModal.call(this); setTimeout(syncGuard, 0); };
+  document.addEventListener('close', () => setTimeout(syncGuard, 0), true);
+  window.NVNav = { sync: () => setTimeout(syncGuard, 0) };
 
   // ---------- açılır menü (sol altta) ----------
   function menu(open) {
@@ -229,6 +298,7 @@
     nav.classList.toggle('open', open);
     $('#menuBtn').setAttribute('aria-expanded', open);
     $('#menuShade').hidden = !open;
+    window.NVNav?.sync();
   }
 
   // ---------- ipuçları (hover / dokunma) ----------
@@ -394,7 +464,13 @@
       const s = NV.load(); s.settings[key] = b.dataset.v; NV.save(s); after?.(); render();
     });
     seg('#appTopSeg', 'appTop'); seg('#themeSeg', 'theme'); seg('#wgTopSeg', 'widgetTop');
-    $('#lockChk').onchange = (e) => { try { window.AndroidBridge?.setLockscreen(e.target.checked); } catch (er) {} toast(e.target.checked ? 'Kilit ekranı bildirimi açıldı' : 'Kilit ekranı bildirimi kapatıldı'); };
+    $('#lockChk').onchange = (e) => { try { window.AndroidBridge?.setLockscreen(e.target.checked); } catch (er) {} toast(e.target.checked ? '🔒 Kilit ekranında vakitler açıldı' : 'Kilit ekranı kapatıldı'); renderGallery(); };
+    $('#lockGrid').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-lock]'); if (!b) return;
+      if (!window.AndroidBridge?.setLockStyle) { toast('Kilit ekranı Android uygulamasında çalışır', 3000); return; }
+      try { window.AndroidBridge.setLockStyle(b.dataset.lock); if (!window.AndroidBridge.getLockscreen()) window.AndroidBridge.setLockscreen(true); } catch (er) {}
+      toast('Kilit ekranı tasarımı: ' + LOCK[b.dataset.lock].name); renderGallery();
+    });
     $('#estChk').onchange = (e) => { const s = NV.load(); s.settings.estimate = e.target.checked; NV.save(s); render(); };
 
     $('#locList').addEventListener('click', (e) => {

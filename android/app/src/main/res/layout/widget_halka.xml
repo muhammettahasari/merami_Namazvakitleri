@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/root" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/wg_bg" android:padding="8dp">
+    <ProgressBar android:id="@+id/h_ring" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="match_parent"
+        android:indeterminate="false" android:max="1000" android:progress="0" android:progressDrawable="@drawable/ring_progress" />
+    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:gravity="center_horizontal" android:orientation="vertical">
+        <TextView android:id="@+id/h_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="13sp" android:textColor="#FF7A8592" android:maxLines="1" android:textStyle="bold" />
+        <Chronometer android:id="@+id/h_ch" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="22sp" android:textColor="#FF17212B" android:textStyle="bold" />
+        <TextView android:id="@+id/h_a" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="12sp" android:textColor="#FF18794A" android:maxLines="1" android:textStyle="bold" />
+        <TextView android:id="@+id/h_b" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="11sp" android:textColor="#FF1D5FB4" android:maxLines="1" android:textStyle="bold" />
+    </LinearLayout>
+</FrameLayout>

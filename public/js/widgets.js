@@ -109,6 +109,53 @@
     return `<div class="wg-cam-bg sky-${sky}">${tablo(m, top, now, 'cam')}</div>`;
   }
 
+  // ---- oruç hesabı: imsak öncesi → sahura kalan, gündüz → iftara kalan, akşamdan sonra → yarınki sahura
+  function orucInfo(m, top, now) {
+    const [a, b] = order(top);
+    const src = m[a] ? a : b; const x = m[src]; if (!x) return null;
+    const at = (day, hm) => (hm ? new Date(`${day}T${hm}:00`) : null);
+    const im = at(m.today, x.imsak), ak = at(m.today, x.aksam);
+    if (now < im) return { mode: 'sahur', target: im, label: 'Sahura (İmsak) kalan' };
+    if (now < ak) return { mode: 'iftar', target: ak, label: 'İftara kalan' };
+    const tom = m.tomorrow?.[src]; const tm = NV.addDays(m.today, 1);
+    return { mode: 'sahur', target: tom ? at(tm, tom.imsak) : null, label: 'Sahura (İmsak) kalan' };
+  }
+
+  // 8) MİNİ — 2x1: sıradaki vakit ve geri sayım
+  function mini(m, top, now) {
+    if (!m.hasData) return `<div class="wg wg-mini">${empty(m)}</div>`;
+    const [a, b] = order(top);
+    const ea = nextOf(m, a), eb = nextOf(m, b), e = ea || eb;
+    return `<div class="wg wg-mini">
+      <div class="mn-l"><small>${loc(m)}</small><b>${e ? nextName(e, a) : '—'}</b><span>${e ? countdown(e.time, now) : ''}</span></div>
+      <div class="mn-r"><span class="${SRC[a].cls}${estMark(m, a)}"><i>${SRC[a].short}</i>${ea?.hm || '—'}</span><span class="${SRC[b].cls}${estMark(m, b)}"><i>${SRC[b].short}</i>${eb?.hm || '—'}</span></div>
+    </div>`;
+  }
+
+  // 9) ORUÇ — 2x2: sahur / iftar sayacı
+  function oruc(m, top, now) {
+    if (!m.hasData) return `<div class="wg wg-oruc">${empty(m)}</div>`;
+    const [a, b] = order(top);
+    const o = orucInfo(m, top, now);
+    return `<div class="wg wg-oruc ${o?.mode || ''}">
+      <div class="or-h"><span>${o?.mode === 'iftar' ? '🌇' : '🌙'} ${o?.label || ''}</span></div>
+      <b class="or-cd">${o?.target ? countdown(o.target, now) : '—'}</b>
+      <div class="or-g"><span></span><i class="${SRC[a].cls}">${SRC[a].short}</i><i class="${SRC[b].cls}">${SRC[b].short}</i>
+        <span>İmsak</span><em class="${SRC[a].cls}${estMark(m, a)}">${m[a]?.imsak || '—'}</em><em class="${SRC[b].cls}${estMark(m, b)}">${m[b]?.imsak || '—'}</em>
+        <span>İftar</span><em class="${SRC[a].cls}${estMark(m, a)}">${m[a]?.aksam || '—'}</em><em class="${SRC[b].cls}${estMark(m, b)}">${m[b]?.aksam || '—'}</em></div>
+    </div>`;
+  }
+
+  // 10) TARİH — 4x1: hicri ve miladi tarih, sıradaki vakit
+  function tarih(m, top, now) {
+    const [a, b] = order(top);
+    const e = nextOf(m, a) || nextOf(m, b);
+    return `<div class="wg wg-tarih">
+      <div class="tr-l"><b>${m.hicri || '—'}</b><span>${NV.fmtDate(m.today)}</span></div>
+      <div class="tr-r"><small>${loc(m)}</small><b>${e ? nextName(e, a) + ' ' + e.hm : '—'}</b><span>${e ? countdown(e.time, now) : ''}</span></div>
+    </div>`;
+  }
+
   const STYLES = {
     tablo: { name: 'Tablo', size: '4×2', render: tablo, desc: '5 vakit, iki satır + teheccüd satırı' },
     kompakt: { name: 'Kompakt', size: '2×2', render: kompakt, desc: 'Sıradaki vakit ve geri sayım' },
@@ -117,7 +164,10 @@
     halka: { name: 'Halka', size: '2×2', render: halka, desc: 'Kalan süre halkası' },
     gece: { name: 'Gece', size: '4×2', render: gece, desc: 'AMOLED siyah, pil dostu' },
     cam: { name: 'Cam', size: '4×2', render: cam, desc: 'Gökyüzü renginde degrade' },
+    mini: { name: 'Mini', size: '2×1', render: mini, desc: 'Sıradaki vakit ve geri sayım, küçük' },
+    oruc: { name: 'Oruç', size: '2×2', render: oruc, desc: 'Sahur ve iftar sayacı, imsak ve iftar saatleri' },
+    tarih: { name: 'Tarih', size: '4×1', render: tarih, desc: 'Hicri ve miladi tarih, sıradaki vakit' },
   };
 
-  g.NVW = { STYLES, COLS };
+  g.NVW = { STYLES, COLS, orucInfo };
 })(window);

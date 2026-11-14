@@ -37,6 +37,15 @@ final class Bridge {
     }
 
     @JavascriptInterface
+    public String getLockStyle() { return Prefs.lockStyle(a); }
+
+    @JavascriptInterface
+    public void setLockStyle(String style) {
+        Prefs.setLockStyle(a, style == null ? "sade" : style);
+        Updater.refresh(a);
+    }
+
+    @JavascriptInterface
     public void keepScreenOn(boolean on) {
         a.runOnUiThread(() -> {
             if (on) a.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -47,13 +56,7 @@ final class Bridge {
     /** Widget'ı doğrudan ana ekrana ekleme isteği (telefon onay sorar). */
     @JavascriptInterface
     public boolean pinWidget(String kind) {
-        Class<?> cls;
-        switch (kind == null ? "" : kind) {
-            case "kompakt": cls = KompaktWidget.class; break;
-            case "serit": cls = SeritWidget.class; break;
-            case "liste": cls = ListeWidget.class; break;
-            default: cls = TabloWidget.class;
-        }
+        Class<?> cls = PinActivity.classOf(kind);
         final Class<?> c = cls;
         a.runOnUiThread(() -> PinActivity.pin(a, c));
         return AppWidgetManager.getInstance(a).isRequestPinAppWidgetSupported();

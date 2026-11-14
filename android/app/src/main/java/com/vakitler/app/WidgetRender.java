@@ -20,7 +20,15 @@ final class WidgetRender {
         update(c, am, KompaktWidget.class, kompakt(c, m));
         update(c, am, SeritWidget.class, serit(c, m));
         update(c, am, ListeWidget.class, liste(c, m));
+        update(c, am, GeceWidget.class, tablo(c, m, THEME_GECE));
+        update(c, am, CamWidget.class, tablo(c, m, THEME_CAM));
+        update(c, am, HalkaWidget.class, halka(c, m));
+        update(c, am, MiniWidget.class, mini(c, m));
+        update(c, am, OrucWidget.class, oruc(c, m));
+        update(c, am, TarihWidget.class, tarih(c, m));
     }
+
+    static final int THEME_ACIK = 0, THEME_GECE = 1, THEME_CAM = 2;
 
     private static void update(Context c, AppWidgetManager am, Class<?> cls, RemoteViews v) {
         int[] ids = am.getAppWidgetIds(new ComponentName(c, cls));
@@ -49,15 +57,29 @@ final class WidgetRender {
     private static boolean aIsF(Model m) { return m.fazTop; }
 
     // ---------------- TABLO (4x2) ----------------
-    static RemoteViews tablo(Context c, Model m) {
+    static RemoteViews tablo(Context c, Model m) { return tablo(c, m, THEME_ACIK); }
+
+    static RemoteViews tablo(Context c, Model m, int theme) {
         RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_tablo);
         v.setOnClickPendingIntent(R.id.root, open(c));
+        int ink = INK, muted = MUTED, fz = FZ, dy = DY, gold = GOLD;
+        if (theme == THEME_GECE) {
+            v.setInt(R.id.root, "setBackgroundResource", R.drawable.wg_bg_dark);
+            ink = 0xFFF1F4F7; muted = 0xFF8B96A3; fz = 0xFF4AD18A; dy = 0xFF6AA6FF; gold = 0xFFF0C060;
+        } else if (theme == THEME_CAM) {
+            int h = java.time.LocalTime.now().getHour();
+            v.setInt(R.id.root, "setBackgroundResource", h < 5 ? R.drawable.sky_night : h < 8 ? R.drawable.sky_dawn : h < 16 ? R.drawable.sky_day : h < 19 ? R.drawable.sky_dusk : R.drawable.sky_night);
+            ink = 0xFFFFFFFF; muted = 0xCCFFFFFF; fz = 0xFFFFFFFF; dy = 0xFFFFFFFF; gold = 0xFFFFE08A;
+        }
+        v.setTextColor(R.id.t_loc, ink); v.setTextColor(R.id.t_date, muted); v.setTextColor(R.id.t_next, ink); v.setTextColor(R.id.ch_next, ink);
+        v.setTextColor(R.id.t_teh, ink); v.setTextColor(R.id.t_extra, theme == THEME_ACIK ? FZ : gold);
+        final int fzC = fz, dyC = dy, mutedC = muted, goldC = gold;
         v.setTextViewText(R.id.t_loc, m.loc);
         v.setTextViewText(R.id.t_date, m.date);
         for (int i = 0; i < 5; i++) {
             int h = id(c, "h" + i);
             v.setTextViewText(h, Model.COL_LABEL[i]);
-            v.setTextColor(h, i == m.curCol ? GOLD : MUTED);
+            v.setTextColor(h, i == m.curCol ? goldC : mutedC);
         }
         if (!m.ok) {
             v.setTextViewText(R.id.t_next, m.msg);
@@ -68,8 +90,8 @@ final class WidgetRender {
             return v;
         }
         boolean aF = aIsF(m);
-        fillRow(c, v, "a", aF, m);
-        fillRow(c, v, "b", !aF, m);
+        fillRow(c, v, "a", aF, m, theme, fzC, dyC);
+        fillRow(c, v, "b", !aF, m, theme, fzC, dyC);
         Model.Ev nx = m.nextTop();
         v.setTextViewText(R.id.t_next, nx == null ? "" : nx.name());
         countdown(v, R.id.ch_next, nx);
@@ -78,17 +100,22 @@ final class WidgetRender {
         return v;
     }
 
-    private static void fillRow(Context c, RemoteViews v, String p, boolean isF, Model m) {
+    private static void fillRow(Context c, RemoteViews v, String p, boolean isF, Model m) { fillRow(c, v, p, isF, m, THEME_ACIK, FZ, DY); }
+
+    private static void fillRow(Context c, RemoteViews v, String p, boolean isF, Model m, int theme, int fzC, int dyC) {
         int row = id(c, "row" + p.toUpperCase());
         int src = id(c, p + "_src");
-        v.setInt(row, "setBackgroundResource", isF ? R.drawable.row_fz : R.drawable.row_dy);
+        int bg = theme == THEME_GECE ? (isF ? R.drawable.row_fz_dk : R.drawable.row_dy_dk)
+                : theme == THEME_CAM ? (isF ? R.drawable.row_fz_gl : R.drawable.row_dy_gl)
+                : (isF ? R.drawable.row_fz : R.drawable.row_dy);
+        v.setInt(row, "setBackgroundResource", bg);
         v.setInt(src, "setBackgroundResource", isF ? R.drawable.badge_fz : R.drawable.badge_dy);
         v.setTextViewText(src, isF ? "V" : "D");
         String[] t = isF ? m.f : m.d;
         for (int i = 0; i < 5; i++) {
             int tv = id(c, p + i);
             v.setTextViewText(tv, t[i]);
-            v.setTextColor(tv, isF ? FZ : DY);
+            v.setTextColor(tv, isF ? fzC : dyC);
         }
     }
 
@@ -173,6 +200,81 @@ final class WidgetRender {
         }
         v.setTextViewText(R.id.l_x1, m.fSabah + " · " + m.asrSani);
         v.setTextViewText(R.id.l_x2, "V " + m.tehF + "\nD " + m.tehD);
+        return v;
+    }
+
+    // ---------------- HALKA (2x2) ----------------
+    static RemoteViews halka(Context c, Model m) {
+        RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_halka);
+        v.setOnClickPendingIntent(R.id.root, open(c));
+        boolean aF = aIsF(m);
+        Model.Ev a = aF ? m.nextF : m.nextD, b = aF ? m.nextD : m.nextF, nx = a != null ? a : b;
+        if (!m.ok || nx == null) {
+            v.setTextViewText(R.id.h_name, m.ok ? "" : m.msg); countdown(v, R.id.h_ch, null);
+            v.setTextViewText(R.id.h_a, ""); v.setTextViewText(R.id.h_b, ""); v.setProgressBar(R.id.h_ring, 1000, 0, false);
+            return v;
+        }
+        long now = System.currentTimeMillis();
+        int prog = 0;
+        if (m.curAt > 0 && nx.at > m.curAt) prog = (int) Math.max(0, Math.min(1000, (now - m.curAt) * 1000 / (nx.at - m.curAt)));
+        v.setProgressBar(R.id.h_ring, 1000, prog, false);
+        v.setTextViewText(R.id.h_name, nx.name());
+        countdown(v, R.id.h_ch, nx);
+        v.setTextViewText(R.id.h_a, (aF ? "V " : "D ") + (a == null ? "—" : a.hm));
+        v.setTextColor(R.id.h_a, aF ? FZ : DY);
+        v.setTextViewText(R.id.h_b, (aF ? "D " : "V ") + (b == null ? "—" : b.hm + " " + b.name()));
+        v.setTextColor(R.id.h_b, aF ? DY : FZ);
+        return v;
+    }
+
+    // ---------------- MİNİ (2x1) ----------------
+    static RemoteViews mini(Context c, Model m) {
+        RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_mini);
+        v.setOnClickPendingIntent(R.id.root, open(c));
+        boolean aF = aIsF(m);
+        Model.Ev a = aF ? m.nextF : m.nextD, b = aF ? m.nextD : m.nextF, nx = a != null ? a : b;
+        v.setTextViewText(R.id.m_loc, m.ok ? m.loc : m.msg);
+        v.setTextViewText(R.id.m_name, nx == null ? "—" : nx.name());
+        countdown(v, R.id.m_ch, nx);
+        v.setTextViewText(R.id.m_a, (aF ? "V " : "D ") + (a == null ? "—" : a.hm));
+        v.setTextColor(R.id.m_a, aF ? FZ : DY);
+        v.setTextViewText(R.id.m_b, (aF ? "D " : "V ") + (b == null ? "—" : b.hm));
+        v.setTextColor(R.id.m_b, aF ? DY : FZ);
+        return v;
+    }
+
+    // ---------------- ORUÇ (2x2) ----------------
+    static RemoteViews oruc(Context c, Model m) {
+        RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_oruc);
+        v.setOnClickPendingIntent(R.id.root, open(c));
+        v.setInt(R.id.root, "setBackgroundResource", m.orucIftar ? R.drawable.bg_oruc_iftar : R.drawable.bg_oruc_night);
+        boolean aF = aIsF(m);
+        v.setTextViewText(R.id.o_lbl, m.ok ? (m.orucIftar ? "🌇 " : "🌙 ") + m.orucLabel : m.msg);
+        if (m.orucAt > 0) {
+            Model.Ev e = new Model.Ev(); e.at = m.orucAt; countdown(v, R.id.o_ch, e);
+        } else countdown(v, R.id.o_ch, null);
+        v.setTextViewText(R.id.o_ha, aF ? "V" : "D");
+        v.setTextViewText(R.id.o_hb, aF ? "D" : "V");
+        v.setInt(R.id.o_ha, "setBackgroundResource", aF ? R.drawable.pill_fz : R.drawable.pill_dy);
+        v.setInt(R.id.o_hb, "setBackgroundResource", aF ? R.drawable.pill_dy : R.drawable.pill_fz);
+        v.setTextViewText(R.id.o_ia, aF ? m.imsakF : m.imsakD);
+        v.setTextViewText(R.id.o_ib, aF ? m.imsakD : m.imsakF);
+        v.setTextViewText(R.id.o_aa, aF ? m.aksamF : m.aksamD);
+        v.setTextViewText(R.id.o_ab, aF ? m.aksamD : m.aksamF);
+        return v;
+    }
+
+    // ---------------- TARİH (4x1) ----------------
+    static RemoteViews tarih(Context c, Model m) {
+        RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_tarih);
+        v.setOnClickPendingIntent(R.id.root, open(c));
+        v.setTextViewText(R.id.d_hicri, m.hicri.isEmpty() ? "—" : m.hicri);
+        v.setTextViewText(R.id.d_date, m.dateLong);
+        v.setTextViewText(R.id.d_loc, m.ok ? m.loc : m.msg);
+        Model.Ev nx = m.nextTop();
+        v.setTextViewText(R.id.d_next, nx == null ? "—" : nx.name() + " " + nx.hm);
+        v.setTextColor(R.id.d_next, m.fazTop ? FZ : DY);
+        countdown(v, R.id.d_ch, nx);
         return v;
     }
 }

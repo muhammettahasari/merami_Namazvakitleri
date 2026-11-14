@@ -22,6 +22,8 @@ final class Model {
     private static final String[] F_KEYS = {"imsak", "sabah", "gunes", "ogle", "ikindi", "aksam", "yatsi"};
     private static final String[] AY = {"Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"};
     private static final String[] GUN = {"Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"};
+    private static final String[] AY_UZUN = {"Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"};
+    private static final String[] GUN_UZUN = {"Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"};
 
     static final class Ev {
         String key;   // imsak, sabah, gunes...
@@ -40,6 +42,13 @@ final class Model {
     final String[] f = new String[5];
     String fImsak = "—", fSabah = "—", fGunes = "—", dGunes = "—", asrSani = "—";
     String tehD = "—", tehF = "—";
+    String hicri = "", dateLong = "";
+    String imsakD = "—", imsakF = "—", aksamD = "—", aksamF = "—";
+    long curAt = -1;            // şu anki vaktin başladığı an (halka ilerlemesi için)
+    // Oruç: imsaktan önce sahura, gündüz iftara, akşamdan sonra yarınki sahura kalan
+    String orucLabel = "";
+    long orucAt = -1;
+    boolean orucIftar;
     int curCol = -1;
     Ev nextD, nextF;
 
@@ -117,6 +126,7 @@ final class Model {
             JSONObject Y = days.optJSONObject(today.minusDays(1).toString());
             JSONObject N = days.optJSONObject(today.plusDays(1).toString());
             m.date = today.getDayOfMonth() + " " + AY[today.getMonthValue() - 1] + " " + GUN[today.getDayOfWeek().getValue() - 1];
+            m.dateLong = today.getDayOfMonth() + " " + AY_UZUN[today.getMonthValue() - 1] + " " + today.getYear() + " " + GUN_UZUN[today.getDayOfWeek().getValue() - 1];
             if (T == null) { m.msg = "Vakitleri yenilemek için uygulamayı açın"; return m; }
 
             JSONObject d = T.optJSONObject("d"), f = T.optJSONObject("f");
@@ -129,6 +139,9 @@ final class Model {
             }
             m.fImsak = s(f, "imsak"); m.fSabah = (m.fEst && f != null ? "≈" : "") + s(f, "sabah"); m.fGunes = s(f, "gunes"); m.dGunes = s(d, "gunes");
             m.asrSani = T.optString("as", "—"); if (m.asrSani.isEmpty()) m.asrSani = "—";
+            m.hicri = T.optString("h", "");
+            m.imsakD = s(d, "imsak"); m.aksamD = s(d, "aksam");
+            m.imsakF = (m.fEst && f != null ? "≈" : "") + s(f, "imsak"); m.aksamF = (m.fEst && f != null ? "≈" : "") + s(f, "aksam");
 
             List<Ev> dEv = events(T, N, today, "d", D_KEYS);
             List<Ev> fEv = events(T, N, today, "f", F_KEYS);
@@ -140,6 +153,22 @@ final class Model {
             Ev cur = null;
             for (Ev e : top) if (e.at <= now) cur = e;
             m.curCol = cur == null ? 4 : colOf(cur.key);
+            if (cur != null) m.curAt = cur.at;
+            else if (Y != null) { // gece yarısından sonra: dünkü yatsı
+                JSONObject yo = Y.optJSONObject(m.fazTop && m.hasF ? "f" : "d");
+                if (yo != null) m.curAt = at(today.minusDays(1), yo.optString("yatsi", ""));
+            }
+
+            // Oruç sayacı (üstteki kaynağa göre)
+            JSONObject os = m.fazTop && f != null ? f : (d != null ? d : f);
+            String osKey = os == f ? "f" : "d";
+            long im = os == null ? -1 : at(today, os.optString("imsak", "")), ak = os == null ? -1 : at(today, os.optString("aksam", ""));
+            if (os == null) { /* veri yok */ }
+            else if (im > 0 && now < im) { m.orucAt = im; m.orucLabel = "Sahura (İmsak) kalan"; }
+            else if (ak > 0 && now < ak) { m.orucAt = ak; m.orucLabel = "İftara kalan"; m.orucIftar = true; }
+            else if (N != null && N.optJSONObject(osKey) != null) {
+                m.orucAt = at(today.plusDays(1), N.optJSONObject(osKey).optString("imsak", "")); m.orucLabel = "Sahura (İmsak) kalan";
+            }
 
             // Teheccüd: imsaktan önce dün akşamın gecesi, sonra bu gecenin
             String imsakTop = m.fazTop && m.hasF ? s(f, "imsak") : s(d, "imsak");

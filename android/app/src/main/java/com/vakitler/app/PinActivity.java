@@ -15,13 +15,26 @@ import android.widget.Toast;
  */
 public class PinActivity extends Activity {
 
+    static final String[] KINDS = {"tablo", "kompakt", "serit", "liste", "halka", "gece", "cam", "mini", "oruc", "tarih"};
     static final String[] NAMES = {
             "Tablo (4×2) — 5 vakit, Verâ ve Diyanet alt alta",
             "Kompakt (2×2) — sıradaki vakit ve geri sayım",
             "Şerit (4×1) — tek satır",
-            "Liste (2×4) — dikey liste"
+            "Liste (2×4) — dikey liste",
+            "Halka (2×2) — kalan süre halkası",
+            "Gece (4×2) — siyah zemin, pil dostu",
+            "Cam (4×2) — gökyüzü renginde",
+            "Mini (2×1) — küçük, sıradaki vakit",
+            "Oruç (2×2) — sahur ve iftar sayacı",
+            "Tarih (4×1) — hicri ve miladi tarih"
     };
-    static final Class<?>[] CLASSES = {TabloWidget.class, KompaktWidget.class, SeritWidget.class, ListeWidget.class};
+    static final Class<?>[] CLASSES = {TabloWidget.class, KompaktWidget.class, SeritWidget.class, ListeWidget.class,
+            HalkaWidget.class, GeceWidget.class, CamWidget.class, MiniWidget.class, OrucWidget.class, TarihWidget.class};
+
+    static Class<?> classOf(String kind) {
+        for (int i = 0; i < KINDS.length; i++) if (KINDS[i].equals(kind)) return CLASSES[i];
+        return TabloWidget.class;
+    }
 
     @Override
     protected void onCreate(Bundle state) {

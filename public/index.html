@@ -81,6 +81,13 @@
           <button data-v="fazilet" class="fz">Verâ üstte</button>
           <button data-v="diyanet" class="dy">Diyanet üstte</button>
         </div>
+        <section class="lockcard" id="lockCard">
+          <div class="lc-h"><div><b>🔒 Kilit ekranı</b><small>Telefon kilitliyken ekranda vakitler görünsün</small></div>
+            <label class="sw2"><input type="checkbox" id="lockChk"><i></i></label></div>
+          <p class="muted small" id="lockNote"></p>
+          <div class="lockgrid" id="lockGrid"></div>
+        </section>
+        <h2 class="sec">Ana ekran widget'ları <small>📌 ile telefonun ana ekranına eklenir</small></h2>
         <div id="gallery" class="gallery"></div>
         <details class="howto">
           <summary>Ana ekrana widget olarak nasıl eklenir?</summary>
@@ -106,8 +113,7 @@
         <button class="btn wide" id="setInstall">📲 Uygulamayı telefona yükle</button>
         <label class="field sw"><span>Verâ verisi olmayan günlerde tahmini göster <small>(≈ işaretli; en yakın gerçek günün Diyanet farkına göre)</small></span>
           <input type="checkbox" id="estChk"><i></i></label>
-        <label class="field sw" id="lockRow" hidden><span>🔒 Kilit ekranında vakitleri göster <small>Sıradaki vakit, geri sayım ve günün vakitleri kilit ekranında bildirim olarak durur</small></span>
-          <input type="checkbox" id="lockChk"><i></i></label>
+
 
         <h2 class="sec">Veri</h2>
         <div id="dataInfo" class="muted small"></div>
